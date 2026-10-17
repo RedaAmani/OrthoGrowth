@@ -4,7 +4,7 @@ Donate link: https://buymeacoffee.com/dramani
 Tags: medical, orthopedics, calculation
 Requires at least: 6.2
 Tested up to: 7.1
-Stable tag: 0.5.0
+Stable tag: 0.5.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -59,10 +59,19 @@ The 2016 article is licensed under Creative Commons Attribution 4.0 Internationa
 
 == Upgrade Notice ==
 
+= 0.5.1 =
+This maintenance release clarifies security checks and documents intentional direct database operations. Test with fictitious data before use.
+
 = 0.5.0 =
 This release updates the readme, adds WordPress personal-data export and erasure support, improves record payload validation, and adds schema checks and multisite table setup. Test with fictitious data before use.
 
 == Changelog ==
+
+= 0.5.1 =
+* Use WordPress's AJAX nonce verification helper.
+* Validate the administration status query parameter before displaying a notice.
+* Add targeted explanations for custom-table database queries and the intentional absence of record caching.
+* Prefix multisite uninstall variables and document the opt-in table drop.
 
 = 0.5.0 =
 * Use an English-only readme with corrected WordPress.org metadata and a concise short description.

@@ -3,7 +3,7 @@
  * Plugin Name: OrthoGrowth
  * Description: Browser-based estimates of limb-length discrepancy and theoretical epiphysiodesis timing.
  * Plugin URI: https://github.com/RedaAmani/OrthoGrowth
- * Version: 0.5.0
+ * Version: 0.5.1
  * Requires at least: 6.2
  * Requires PHP: 8.0
  * Author: Dr M.R. Amani
@@ -15,7 +15,7 @@
 if (!defined('ABSPATH')) { exit; }
 
 final class OrthoGrowth {
-    const VERSION = '0.5.0';
+    const VERSION = '0.5.1';
     const DB_VERSION = '1.0';
     const CAPABILITY = 'orthogrowth_use';
     const NONCE_ACTION = 'orthogrowth_server_action';
@@ -150,7 +150,8 @@ final class OrthoGrowth {
         $users = get_users(['orderby' => 'display_name', 'order' => 'ASC']);
         echo '<div class="wrap"><h1>' . esc_html__('OrthoGrowth access', 'orthogrowth') . '</h1>';
         echo '<p>' . esc_html__('Authorized users can view and delete only the records they created. Administrators can view and delete all records.', 'orthogrowth') . '</p>';
-        if (isset($_GET['updated'])) { echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Settings saved.', 'orthogrowth') . '</p></div>'; }
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only status flag for the redirect notice; it does not trigger a state change.
+        if (isset($_GET['updated']) && '1' === sanitize_text_field(wp_unslash($_GET['updated']))) { echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Settings saved.', 'orthogrowth') . '</p></div>'; }
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '"><input type="hidden" name="action" value="orthogrowth_access">';
         wp_nonce_field('orthogrowth_access_save');
         echo '<table class="widefat striped"><thead><tr><th>' . esc_html__('Authorized', 'orthogrowth') . '</th><th>' . esc_html__('Display name', 'orthogrowth') . '</th><th>' . esc_html__('Username', 'orthogrowth') . '</th><th>' . esc_html__('Email', 'orthogrowth') . '</th><th>' . esc_html__('Role', 'orthogrowth') . '</th></tr></thead><tbody>';
@@ -211,6 +212,7 @@ final class OrthoGrowth {
         global $wpdb;
         $limit = 100;
         $offset = max(0, (absint($page) - 1) * $limit);
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- This paginated query reads OrthoGrowth's custom table; sensitive records are deliberately not cached.
         $rows = $wpdb->get_results($wpdb->prepare(
             'SELECT id, last_name, first_names, measurement_date, scenario, record_json, created_at, updated_at FROM %i WHERE created_by = %d ORDER BY id ASC LIMIT %d OFFSET %d',
             self::table_name(), (int) $user->ID, $limit, $offset
@@ -250,6 +252,7 @@ final class OrthoGrowth {
             return ['items_removed' => false, 'items_retained' => false, 'messages' => [], 'done' => true];
         }
         global $wpdb;
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Deletes the requesting account's records from the custom table; no cache is maintained for these records.
         $deleted = $wpdb->delete(self::table_name(), ['created_by' => (int) $user->ID], ['%d']);
         if ($deleted === false) {
             return ['items_removed' => false, 'items_retained' => true, 'messages' => [__('OrthoGrowth records could not be deleted. The site administrator should investigate the database error.', 'orthogrowth')], 'done' => true];
@@ -260,15 +263,19 @@ final class OrthoGrowth {
     private static function verify_ajax() {
         if (!is_user_logged_in()) { wp_send_json_error(['message' => __('Session expired. Please log in again.', 'orthogrowth')], 401); }
         if (!self::can_use()) { wp_send_json_error(['message' => __('Access denied.', 'orthogrowth')], 403); }
-        $nonce = isset($_POST['nonce']) ? sanitize_text_field(wp_unslash($_POST['nonce'])) : '';
-        if (!$nonce || !wp_verify_nonce($nonce, self::NONCE_ACTION)) { wp_send_json_error(['message' => __('Security token expired. Reload the page.', 'orthogrowth')], 403); }
+        // Use WordPress' AJAX nonce verifier so the check is explicit and recognized by security tooling.
+        if (false === check_ajax_referer(self::NONCE_ACTION, 'nonce', false)) {
+            wp_send_json_error(['message' => __('Security token expired. Reload the page.', 'orthogrowth')], 403);
+        }
     }
 
     public static function ajax_list() {
         self::verify_ajax(); global $wpdb; $table = self::table_name();
         if (self::is_admin_user()) {
+            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Required query against the custom records table; sensitive records are deliberately not cached.
             $rows = $wpdb->get_results($wpdb->prepare('SELECT id, last_name, first_names, measurement_date, scenario, updated_at FROM %i ORDER BY COALESCE(measurement_date, DATE(updated_at)) DESC, id DESC LIMIT 2000', $table), ARRAY_A);
         } else {
+            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- User-scoped query against the custom records table; sensitive records are deliberately not cached.
             $rows = $wpdb->get_results($wpdb->prepare('SELECT id, last_name, first_names, measurement_date, scenario, updated_at FROM %i WHERE created_by = %d ORDER BY COALESCE(measurement_date, DATE(updated_at)) DESC, id DESC LIMIT 2000', $table, get_current_user_id()), ARRAY_A);
         }
         if ($rows === null) { wp_send_json_error(['message' => __('Could not read records.', 'orthogrowth')], 500); }
@@ -295,6 +302,7 @@ final class OrthoGrowth {
 
     public static function ajax_save() {
         self::verify_ajax(); global $wpdb;
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- verify_ajax() validates the nonce and capability; JSON is decoded before field-by-field validation because sanitizing serialized JSON would corrupt its structure.
         $raw = isset($_POST['record']) && is_string($_POST['record']) ? wp_unslash($_POST['record']) : '';
         if ($raw === '' || strlen($raw) > 2 * 1024 * 1024) { wp_send_json_error(['message' => __('The record is empty or exceeds the 2 MB limit.', 'orthogrowth')], 400); }
         $record = json_decode($raw, true);
@@ -351,6 +359,7 @@ final class OrthoGrowth {
         $json = wp_json_encode($clean_record, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         if (!$json) { wp_send_json_error(['message' => __('Could not prepare the record for storage.', 'orthogrowth')], 500); }
         $now = current_time('mysql', true); $user_id = get_current_user_id();
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Inserts a validated record into OrthoGrowth's custom table; no object-cache entry is created for records.
         $ok = $wpdb->insert(self::table_name(), ['last_name'=>$last_name,'first_names'=>$first_names,'measurement_date'=>$measurement_date,'scenario'=>$scenario,'record_json'=>$json,'created_by'=>$user_id,'updated_by'=>$user_id,'created_at'=>$now,'updated_at'=>$now], ['%s','%s','%s','%s','%s','%d','%d','%s','%s']);
         if (!$ok) { wp_send_json_error(['message' => __('Database storage failed.', 'orthogrowth')], 500); }
         wp_send_json_success(['id' => (int)$wpdb->insert_id]);
@@ -358,12 +367,18 @@ final class OrthoGrowth {
 
     private static function get_authorized_record($id) {
         global $wpdb; $table = self::table_name();
-        if (self::is_admin_user()) { return $wpdb->get_row($wpdb->prepare('SELECT id, record_json FROM %i WHERE id = %d', $table, $id), ARRAY_A); }
+        if (self::is_admin_user()) {
+            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Fetches one authorized row from the custom table; sensitive records are deliberately not cached.
+            return $wpdb->get_row($wpdb->prepare('SELECT id, record_json FROM %i WHERE id = %d', $table, $id), ARRAY_A);
+        }
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Fetches one user-scoped row from the custom table; sensitive records are deliberately not cached.
         return $wpdb->get_row($wpdb->prepare('SELECT id, record_json FROM %i WHERE id = %d AND created_by = %d', $table, $id, get_current_user_id()), ARRAY_A);
     }
 
     public static function ajax_get() {
-        self::verify_ajax(); $id = isset($_POST['id']) ? absint($_POST['id']) : 0;
+        self::verify_ajax();
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- verify_ajax() validates the nonce and capability before reading this request value.
+        $id = isset($_POST['id']) ? absint($_POST['id']) : 0;
         if (!$id) { wp_send_json_error(['message' => __('Invalid record ID.', 'orthogrowth')], 400); }
         $row = self::get_authorized_record($id);
         if (!$row) { wp_send_json_error(['message' => __('Record not found or access denied.', 'orthogrowth')], 404); }
@@ -373,11 +388,18 @@ final class OrthoGrowth {
     }
 
     public static function ajax_delete() {
-        self::verify_ajax(); global $wpdb; $id = isset($_POST['id']) ? absint($_POST['id']) : 0;
+        self::verify_ajax(); global $wpdb;
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- verify_ajax() validates the nonce and capability before reading this request value.
+        $id = isset($_POST['id']) ? absint($_POST['id']) : 0;
         if (!$id) { wp_send_json_error(['message' => __('Invalid record ID.', 'orthogrowth')], 400); }
         $table = self::table_name();
-        if (self::is_admin_user()) { $deleted = $wpdb->delete($table, ['id'=>$id], ['%d']); }
-        else { $deleted = $wpdb->delete($table, ['id'=>$id, 'created_by'=>get_current_user_id()], ['%d','%d']); }
+        if (self::is_admin_user()) {
+            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Deletes one selected record from the custom table; no cache is maintained.
+            $deleted = $wpdb->delete($table, ['id'=>$id], ['%d']);
+        } else {
+            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Deletes only a record owned by the current user; no cache is maintained.
+            $deleted = $wpdb->delete($table, ['id'=>$id, 'created_by'=>get_current_user_id()], ['%d','%d']);
+        }
         if ($deleted === false) { wp_send_json_error(['message' => __('Deletion failed.', 'orthogrowth')], 500); }
         if ($deleted === 0) { wp_send_json_error(['message' => __('Record not found or deletion not permitted.', 'orthogrowth')], 404); }
         wp_send_json_success(['deleted' => true]);

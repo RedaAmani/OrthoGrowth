@@ -5,6 +5,7 @@ function orthogrowth_uninstall_current_site() {
     global $wpdb;
     if ((bool) get_option('orthogrowth_delete_data_on_uninstall', 0)) {
         $table = $wpdb->prefix . 'orthogrowth_records';
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Intentional opt-in cleanup of this plugin's custom table during uninstall; no runtime cache exists.
         $wpdb->query($wpdb->prepare('DROP TABLE IF EXISTS %i', $table));
     }
     foreach (get_users(['fields' => 'ID', 'number' => 0]) as $user_id) {
@@ -18,9 +19,9 @@ function orthogrowth_uninstall_current_site() {
 }
 
 if (is_multisite() && get_site_option('orthogrowth_network_active', 0)) {
-    $site_ids = get_sites(['number' => 0, 'fields' => 'ids']);
-    foreach ($site_ids as $site_id) {
-        switch_to_blog((int) $site_id);
+    $orthogrowth_site_ids = get_sites(['number' => 0, 'fields' => 'ids']);
+    foreach ($orthogrowth_site_ids as $orthogrowth_site_id) {
+        switch_to_blog((int) $orthogrowth_site_id);
         orthogrowth_uninstall_current_site();
         restore_current_blog();
     }
