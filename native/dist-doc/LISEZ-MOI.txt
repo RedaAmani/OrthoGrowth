@@ -1,0 +1,31 @@
+OrthoGrowth 0.5.1 - application autonome hors ligne (Rust + Slint)
+
+MENU
+  Fichier > Ouvrir le dossier des données, Quitter. Aide > À propos (version, crédits, licence, liens).
+
+LANCER
+  Windows : double-cliquer sur OrthoGrowth.exe (aucune installation, aucun autre fichier nécessaire).
+  Linux   : ./OrthoGrowth   (nécessite les bibliothèques graphiques habituelles : X11 ou Wayland, fontconfig).
+
+DONNÉES
+  Au premier lancement, un dossier "donnees" est créé à côté du programme.
+  Chaque dossier patient enregistré est un fichier lisible : donnees/dossier-N.json.
+  - Sauvegarder : copier le dossier "donnees".
+  - Déplacer le programme : copier le programme et le dossier "donnees" ensemble.
+  - Importer : déposer des fichiers dossier-N.json dans "donnees" (sans écraser des numéros déjà
+    utilisés), puis cliquer sur Actualiser dans l'onglet Dossiers. Les dossiers de la version
+    Electron et de la version web sont compatibles.
+  - Si le dossier du programme n'est pas inscriptible (ex. Program Files), les données vont dans
+    Documents/OrthoGrowth/donnees ; le chemin réel est affiché dans l'onglet Dossiers.
+  - "Exporter la fiche JSON" crée donnees/exports/ ; "Fiche imprimable" crée donnees/fiches/ et
+    l'ouvre dans le navigateur (Ctrl+P pour imprimer ou enregistrer en PDF).
+  - La langue choisie est mémorisée dans le fichier orthogrowth.cfg, à côté du dossier "donnees".
+
+AVERTISSEMENTS
+  Prototype non validé cliniquement. La valeur 2,03 (filles, 3,08 ans) est une correction déduite
+  de la table publiée : à vérifier indépendamment. Les fichiers contiennent des noms de patients en
+  clair et ne sont pas chiffrés : protéger l'ordinateur et les copies.
+  Windows peut afficher un avertissement SmartScreen au premier lancement (programme non signé) :
+  "Informations complémentaires" puis "Exécuter quand même".
+
+Licence : GPL-2.0-or-later (comme le plugin WordPress). Interface : Slint (GPL-3.0 ou licence commerciale).

@@ -1,0 +1,485 @@
+import { Button, ComboBox, LineEdit, ScrollView, TabWidget, ListView } from "std-widgets.slint";
+import { T } from "tr.slint";
+export { T }
+
+export struct Form {
+    last-name: string, first-names: string, dob: string, exam-date: string, age: string, bone-age: string,
+    femur-r: string, femur-l: string, tibia-r: string, tibia-l: string, foot-r: string, foot-l: string,
+    prev-exam-date: string, prev-age: string,
+    prev-femur-r: string, prev-femur-l: string, prev-tibia-r: string, prev-tibia-l: string,
+    sex: int, age-basis: int, unit: int, bone-method: int, scenario: int,
+}
+export struct Results {
+    mult: string, current: string, mature: string, mature-femur: string, mature-tibia: string,
+    growth: string, epi-femur: string, epi-tibia: string, epi-both: string,
+}
+export struct RecordItem { id: int, label: string }
+export struct TableRow { age: string, boys: string, girls: string }
+
+component Label inherits Text { font-size: 12px; font-weight: 600; color: #17202b; wrap: word-wrap; }
+component Help inherits Text { font-size: 12px; color: #526273; wrap: word-wrap; }
+
+component Field inherits VerticalLayout {
+    in property <string> label;
+    in property <string> placeholder;
+    in property <InputType> kind: InputType.text;
+    in-out property <string> value;
+    callback edited();
+    spacing: 3px;
+    Label { text: root.label; }
+    LineEdit {
+        text <=> root.value;
+        placeholder-text: root.placeholder;
+        input-type: root.kind;
+        edited(t) => { root.edited(); }
+    }
+}
+
+component Cell inherits LineEdit {
+    input-type: InputType.decimal;
+    placeholder-text: "mm / cm";
+}
+
+component Choice inherits VerticalLayout {
+    in property <string> label;
+    in property <[string]> model;
+    in-out property <int> index;
+    spacing: 3px;
+    Label { text: root.label; }
+    ComboBox { model: root.model; current-index <=> root.index; }
+}
+
+component Card inherits Rectangle {
+    in property <string> title;
+    background: #ffffff;
+    border-color: #d9e0e8;
+    border-width: 1px;
+    border-radius: 8px;
+    VerticalLayout {
+        padding: 14px;
+        spacing: 10px;
+        Text { text: root.title; font-size: 16px; font-weight: 700; color: #17202b; }
+        @children
+    }
+}
+
+component Tile inherits Rectangle {
+    in property <string> label;
+    in property <string> value;
+    background: #f2f6fa;
+    border-color: #d9e4ed;
+    border-width: 1px;
+    border-radius: 6px;
+    VerticalLayout {
+        padding: 10px;
+        spacing: 4px;
+        Text { text: root.label; font-size: 11px; color: #526273; wrap: word-wrap; }
+        Text { text: root.value; font-size: 17px; font-weight: 700; color: #17202b; wrap: word-wrap; }
+    }
+}
+
+component StatusText inherits Text {
+    in property <bool> error;
+    font-weight: 600;
+    font-size: 13px;
+    wrap: word-wrap;
+    color: root.error ? #a12622 : #216a43;
+}
+
+export component MainWindow inherits Window {
+    title: "OrthoGrowth";
+    min-width: 820px;
+    min-height: 600px;
+    preferred-width: 1100px;
+    preferred-height: 820px;
+    background: #f4f6f9;
+    icon: root.app-icon;
+
+    in-out property <Form> form;
+    in-out property <Results> results;
+    in-out property <string> status;
+    in-out property <bool> status-error;
+    in-out property <string> record-status;
+    in-out property <bool> record-status-error;
+    in-out property <[RecordItem]> records;
+    in-out property <int> selected-id: -1;
+    in-out property <bool> confirm-delete;
+    in-out property <string> data-path;
+    in-out property <int> lang-index;
+    in-out property <int> tab: 0;
+    in-out property <[TableRow]> table-rows;
+    in-out property <bool> about-open: false;
+    in property <string> app-version;
+    in property <image> app-icon;
+
+    callback calculate();
+    callback reset();
+    callback save-record();
+    callback load-record();
+    callback delete-request();
+    callback delete-record();
+    callback refresh-records();
+    callback open-folder();
+    callback export-json();
+    callback open-fiche();
+    callback dates-changed();
+    callback lang-changed(int);
+    callback open-url(int);
+    callback quit();
+
+    MenuBar {
+        Menu {
+            title: T.menu-file;
+            MenuItem { title: T.menu-open-folder; activated => { root.open-folder(); } }
+            MenuSeparator { }
+            MenuItem { title: T.menu-quit; activated => { root.quit(); } }
+        }
+        Menu {
+            title: T.menu-help;
+            MenuItem { title: T.menu-about; activated => { root.about-open = true; } }
+        }
+    }
+
+    VerticalLayout {
+        Rectangle {
+            background: #18324b;
+            height: 64px;
+            HorizontalLayout {
+                padding-left: 20px;
+                padding-right: 20px;
+                spacing: 16px;
+                VerticalLayout {
+                    alignment: center;
+                    Text { text: "OrthoGrowth"; color: #f5f1e8; font-size: 22px; font-weight: 700; }
+                    Text { text: T.subtitle; color: #d8e3ed; font-size: 12px; }
+                }
+                VerticalLayout {
+                    alignment: center;
+                    width: 150px;
+                    ComboBox {
+                        model: T.lang-options;
+                        current-index <=> root.lang-index;
+                        selected(v) => { root.lang-changed(root.lang-index); }
+                    }
+                }
+            }
+        }
+        Rectangle {
+            background: #fff7e6;
+            HorizontalLayout {
+                padding: 10px;
+                spacing: 10px;
+                Rectangle { width: 4px; background: #b7791f; }
+                Text { text: T.medical-note; wrap: word-wrap; font-size: 12px; color: #17202b; }
+            }
+        }
+
+        TabWidget {
+            current-index <=> root.tab;
+
+            Tab {
+                title: T.tab-calc;
+                ScrollView {
+                    VerticalLayout {
+                        padding: 14px;
+                        spacing: 12px;
+                        alignment: start;
+
+                        Card {
+                            title: T.patient-title;
+                            GridLayout {
+                                spacing: 10px;
+                                Row {
+                                    Field { label: T.last-name-label; value <=> root.form.last-name; }
+                                    Field { label: T.first-names-label; value <=> root.form.first-names; }
+                                    Field { label: T.dob-label; placeholder: T.date-placeholder; value <=> root.form.dob; edited => { root.dates-changed(); } }
+                                }
+                                Row {
+                                    Field { label: T.exam-label; placeholder: T.date-placeholder; value <=> root.form.exam-date; edited => { root.dates-changed(); } }
+                                    Field { label: T.age-label; kind: InputType.decimal; placeholder: "10.33"; value <=> root.form.age; }
+                                    Choice { label: T.sex-label; model: T.sex-options; index <=> root.form.sex; }
+                                }
+                                Row {
+                                    Field { label: T.bone-age-label; kind: InputType.decimal; placeholder: "10.5"; value <=> root.form.bone-age; }
+                                    Choice { label: T.bone-method-label; model: T.method-options; index <=> root.form.bone-method; }
+                                    Choice { label: T.age-basis-label; model: T.basis-options; index <=> root.form.age-basis; }
+                                }
+                                Row {
+                                    Choice { label: T.unit-label; model: ["mm", "cm"]; index <=> root.form.unit; }
+                                }
+                            }
+                            Help { text: T.age-help; }
+                        }
+
+                        Card {
+                            title: T.measure-title;
+                            Help { text: T.measure-help; }
+                            GridLayout {
+                                spacing: 8px;
+                                Row { Label { text: T.segment-head; } Label { text: T.right-head; } Label { text: T.left-head; } }
+                                Row {
+                                    Label { text: T.femur-label; vertical-alignment: center; }
+                                    Cell { text <=> root.form.femur-r; }
+                                    Cell { text <=> root.form.femur-l; }
+                                }
+                                Row {
+                                    Label { text: T.tibia-label; vertical-alignment: center; }
+                                    Cell { text <=> root.form.tibia-r; }
+                                    Cell { text <=> root.form.tibia-l; }
+                                }
+                                Row {
+                                    Label { text: T.foot-label; vertical-alignment: center; }
+                                    Cell { text <=> root.form.foot-r; }
+                                    Cell { text <=> root.form.foot-l; }
+                                }
+                            }
+                            Help { text: T.sign-help; }
+                        }
+
+                        if root.form.scenario == 1: Card {
+                            title: T.previous-title;
+                            Help { text: T.previous-help; }
+                            GridLayout {
+                                spacing: 10px;
+                                Row {
+                                    Field { label: T.prev-exam-label; placeholder: T.date-placeholder; value <=> root.form.prev-exam-date; edited => { root.dates-changed(); } }
+                                    Field { label: T.prev-age-label; kind: InputType.decimal; placeholder: "7.00"; value <=> root.form.prev-age; }
+                                    Rectangle { }
+                                }
+                            }
+                            Help { text: T.prev-age-help; }
+                            GridLayout {
+                                spacing: 8px;
+                                Row { Label { text: T.previous-segment-head; } Label { text: T.previous-right-head; } Label { text: T.previous-left-head; } }
+                                Row {
+                                    Label { text: T.previous-femur-label; vertical-alignment: center; }
+                                    Cell { text <=> root.form.prev-femur-r; }
+                                    Cell { text <=> root.form.prev-femur-l; }
+                                }
+                                Row {
+                                    Label { text: T.previous-tibia-label; vertical-alignment: center; }
+                                    Cell { text <=> root.form.prev-tibia-r; }
+                                    Cell { text <=> root.form.prev-tibia-l; }
+                                }
+                            }
+                        }
+
+                        Card {
+                            title: T.calc-title;
+                            HorizontalLayout {
+                                Choice { label: T.scenario-label; model: T.scenario-options; index <=> root.form.scenario; max-width: 420px; }
+                                Rectangle { }
+                            }
+                            Help { text: T.scenario-help; }
+                            HorizontalLayout {
+                                spacing: 8px;
+                                alignment: start;
+                                Button { text: T.calculate; primary: true; clicked => { root.calculate(); } }
+                                Button { text: T.reset; clicked => { root.reset(); } }
+                            }
+                            StatusText { text: root.status; error: root.status-error; }
+                        }
+
+                        Card {
+                            title: T.results-title;
+                            GridLayout {
+                                spacing: 8px;
+                                Row {
+                                    Tile { label: T.mult-result-label; value: root.results.mult; }
+                                    Tile { label: T.current-lld-label; value: root.results.current; }
+                                    Tile { label: T.mature-lld-label; value: root.results.mature; }
+                                }
+                                Row {
+                                    Tile { label: T.mature-femur-label; value: root.results.mature-femur; }
+                                    Tile { label: T.mature-tibia-label; value: root.results.mature-tibia; }
+                                    Tile { label: T.growth-label; value: root.results.growth; }
+                                }
+                                Row {
+                                    Tile { label: T.epi-femur-label; value: root.results.epi-femur; }
+                                    Tile { label: T.epi-tibia-label; value: root.results.epi-tibia; }
+                                    Tile { label: T.epi-both-label; value: root.results.epi-both; }
+                                }
+                            }
+                            Help { text: T.method-text; }
+                            HorizontalLayout {
+                                spacing: 8px;
+                                alignment: start;
+                                Button { text: T.save-record; primary: true; clicked => { root.save-record(); } }
+                                Button { text: T.export; clicked => { root.export-json(); } }
+                                Button { text: T.fiche; clicked => { root.open-fiche(); } }
+                            }
+                            StatusText { text: root.record-status; error: root.record-status-error; }
+                        }
+                        Help { text: T.footer-note; }
+                    }
+                }
+            }
+
+            Tab {
+                title: T.tab-records;
+                VerticalLayout {
+                    padding: 14px;
+                    Card {
+                        title: T.records-title;
+                        vertical-stretch: 1;
+                        Help { text: T.records-help; }
+                        Text { text: T.data-folder + " " + root.data-path; font-size: 12px; font-weight: 600; color: #17202b; wrap: word-wrap; }
+                        HorizontalLayout {
+                            spacing: 8px;
+                            alignment: start;
+                            Button { text: T.open-folder; clicked => { root.open-folder(); } }
+                            Button { text: T.refresh; clicked => { root.refresh-records(); } }
+                        }
+                        Label { text: T.saved-records-label; }
+                        Rectangle {
+                            vertical-stretch: 1;
+                            background: #ffffff;
+                            border-width: 1px;
+                            border-color: #aebac7;
+                            border-radius: 4px;
+                            if root.records.length == 0: Text {
+                                text: T.no-saved-records;
+                                color: #526273;
+                                font-size: 13px;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                            ListView {
+                                for r in root.records: Rectangle {
+                                    height: 30px;
+                                    background: r.id == root.selected-id ? #dbe9f6 : transparent;
+                                    Text {
+                                        x: 10px;
+                                        width: parent.width - 20px;
+                                        text: r.label;
+                                        font-size: 13px;
+                                        color: #17202b;
+                                        vertical-alignment: center;
+                                        overflow: elide;
+                                    }
+                                    TouchArea { clicked => { root.selected-id = r.id; root.confirm-delete = false; } }
+                                }
+                            }
+                        }
+                        HorizontalLayout {
+                            spacing: 8px;
+                            alignment: start;
+                            Button { text: T.load-record; primary: true; clicked => { root.load-record(); } }
+                            if !root.confirm-delete: Button { text: T.delete-record; clicked => { root.delete-request(); } }
+                            if root.confirm-delete: Text { text: T.confirm-delete; color: #a12622; font-weight: 600; vertical-alignment: center; }
+                            if root.confirm-delete: Button { text: T.yes-delete; clicked => { root.delete-record(); } }
+                            if root.confirm-delete: Button { text: T.cancel; clicked => { root.confirm-delete = false; } }
+                        }
+                        StatusText { text: root.record-status; error: root.record-status-error; }
+                    }
+                }
+            }
+
+            Tab {
+                title: T.tab-table;
+                VerticalLayout {
+                    padding: 14px;
+                    Card {
+                        title: T.table-summary;
+                        vertical-stretch: 1;
+                        Help { text: T.table-desc; }
+                        Rectangle {
+                            height: 20px;
+                            Label { x: 10px; text: T.table-age; }
+                            Label { x: parent.width * 0.34; text: T.table-boys; }
+                            Label { x: parent.width * 0.67; text: T.table-girls; }
+                        }
+                        Rectangle {
+                            vertical-stretch: 1;
+                            border-width: 1px;
+                            border-color: #aebac7;
+                            border-radius: 4px;
+                            ListView {
+                                for r[i] in root.table-rows: Rectangle {
+                                    height: 24px;
+                                    background: mod(i, 2) == 0 ? #f7f9fb : #ffffff;
+                                    Text { x: 10px; height: parent.height; text: r.age; font-size: 13px; vertical-alignment: center; }
+                                    Text { x: parent.width * 0.34; height: parent.height; text: r.boys; font-size: 13px; vertical-alignment: center; }
+                                    Text { x: parent.width * 0.67; height: parent.height; text: r.girls; font-size: 13px; vertical-alignment: center; }
+                                }
+                            }
+                        }
+                        Label { text: T.refs-title; }
+                        Help { text: T.need-internet; }
+                        HorizontalLayout {
+                            spacing: 8px;
+                            alignment: start;
+                            Button { text: T.ref-mills; clicked => { root.open-url(0); } }
+                            Button { text: T.ref-table; clicked => { root.open-url(1); } }
+                            Button { text: T.ref-paley; clicked => { root.open-url(2); } }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if root.about-open: Rectangle {
+        x: 0px;
+        y: 0px;
+        width: root.width;
+        height: root.height;
+        background: #000000a8;
+        TouchArea { clicked => { } }
+        FocusScope {
+            key-pressed(event) => {
+                if (event.text == Key.Escape) { root.about-open = false; return accept; }
+                return reject;
+            }
+            init => { self.focus(); }
+        }
+        VerticalLayout {
+            alignment: center;
+            HorizontalLayout {
+                alignment: center;
+                Rectangle {
+                    width: min(640px, root.width - 40px);
+                    background: #ffffff;
+                    border-radius: 10px;
+                    border-width: 1px;
+                    border-color: #d9e0e8;
+                    VerticalLayout {
+                        padding: 22px;
+                        spacing: 10px;
+                        HorizontalLayout {
+                            spacing: 14px;
+                            Image { source: root.app-icon; width: 64px; height: 64px; }
+                            VerticalLayout {
+                                alignment: center;
+                                spacing: 2px;
+                                Text { text: "OrthoGrowth"; font-size: 24px; font-weight: 700; color: #17202b; }
+                                Text { text: T.about-version + " " + root.app-version; font-size: 13px; color: #526273; }
+                            }
+                        }
+                        Text { text: T.about-desc; wrap: word-wrap; font-size: 13px; color: #17202b; }
+                        Text { text: T.about-credits; wrap: word-wrap; font-size: 13px; font-weight: 700; color: #17202b; }
+                        Text { text: T.about-method; wrap: word-wrap; font-size: 12px; color: #526273; }
+                        Rectangle {
+                            background: #fff7e6;
+                            HorizontalLayout {
+                                padding: 8px;
+                                spacing: 8px;
+                                Rectangle { width: 4px; background: #b7791f; }
+                                Text { text: T.medical-note; wrap: word-wrap; font-size: 12px; color: #17202b; }
+                            }
+                        }
+                        Text { text: T.about-license; wrap: word-wrap; font-size: 12px; color: #526273; }
+                        Text { text: T.data-folder + " " + root.data-path; wrap: word-wrap; font-size: 12px; color: #526273; }
+                        HorizontalLayout {
+                            spacing: 8px;
+                            Button { text: T.about-website; clicked => { root.open-url(3); } }
+                            Button { text: T.about-donate; clicked => { root.open-url(4); } }
+                            Rectangle { }
+                            Button { text: T.about-close; primary: true; clicked => { root.about-open = false; } }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

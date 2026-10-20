@@ -1,0 +1,25 @@
+[package]
+name = "orthogrowth"
+version = "0.5.1"
+edition = "2021"
+rust-version = "1.89"
+license = "GPL-2.0-or-later"
+description = "OrthoGrowth : application autonome hors ligne"
+build = "build.rs"
+
+[lib]
+name = "orthogrowth_app"
+path = "src/lib.rs"
+
+[[bin]]
+name = "OrthoGrowth"
+path = "src/main.rs"
+
+[dependencies]
+orthogrowth-core = { path = "../core" }
+slint = { version = "1", default-features = false, features = ["std", "compat-1-2", "backend-winit", "renderer-software", "software-renderer-systemfonts"] }
+serde_json = "1"
+
+[build-dependencies]
+slint-build = "1"
+embed-resource = "3"
