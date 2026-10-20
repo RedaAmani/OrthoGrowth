@@ -1,68 +1,80 @@
-# OrthoGrowth
-OrthoGrowth is a Wordpress plugin that provides a browser-based calculation interface for estimating lower-limb length discrepancy and theoretical epiphysiodesis timing.
+\# OrthoGrowth
 
 
-Contributors: doczen
 
-Donate link: https://buymeacoffee.com/dramani
+Estimates of lower-limb length discrepancy and theoretical epiphysiodesis timing in pediatric orthopedics, using the multiplier method. English and French interface.
 
-Tags: medical, orthopedics, calculation
 
-Requires at least: 6.2
 
-Tested up to: 7.1
+> \*\*Clinical disclaimer.\*\* OrthoGrowth is a calculation prototype, not a clinically validated medical device. Its calculations, assumptions and multiplier data require independent verification. Do not use it as the sole basis for diagnosis, treatment planning or epiphysiodesis decisions. Verify all measurements and results with a qualified specialist.
 
-Stable tag: 0.5.0
 
-License: GPLv2 or later
 
-License URI: https://www.gnu.org/licenses/gpl-2.0.html
+\## Two ways to use it
 
-A browser-based prototype for estimating limb-length discrepancy and theoretical epiphysiodesis timing in pediatric orthopedics.
 
-== Description ==
 
-OrthoGrowth is a browser-based calculation prototype intended for use in pediatric orthopedics. It estimates lower-limb length discrepancy and theoretical epiphysiodesis timing using the multiplier method. The interface supports English and French.
+\### WordPress plugin (files at the root of this repository)
 
-Authorized users can create and manage their own records. Site administrators can view all records and manage user access. Records include patient names, measurement dates, entered measurements and calculation results, and are stored in the WordPress database.
+Browser-based. Requires WordPress 6.2+ and PHP 8.0+. Records are stored in the WordPress database, per user.
 
-**Clinical disclaimer:** OrthoGrowth is a calculation prototype, not a clinically validated medical device. Its calculations, assumptions, multiplier data and inferred correction described below require independent verification. Do not use it as the sole basis for diagnosis, treatment planning or epiphysiodesis decisions. Verify all measurements and results with a qualified specialist.
 
-The site owner is responsible for access control, secure hosting, HTTPS, protected backups, appropriate retention, and compliance with applicable privacy and health-data laws. Do not enter real patient data into a test or publicly accessible installation.
 
-== Installation ==
+1\. Upload the plugin to `/wp-content/plugins/` (or install the plugin ZIP from the Plugins screen) and activate it.
 
-1. Upload the `orthogrowth` folder to `/wp-content/plugins/`, or install the plugin ZIP through the WordPress Plugins screen.
-2. Activate OrthoGrowth. On multisite installations, network activation creates a separate records table for each site, including newly created sites.
-3. Open the OrthoGrowth menu in the WordPress administration sidebar and grant access to individual users.
-4. Create a page available only to authorized users and add the shortcode `[orthogrowth]`.
-5. Test calculation, saving, loading, exporting and deletion with fictitious data before any real use.
+2\. Open the OrthoGrowth menu in the administration sidebar and grant access to individual users.
 
-== Privacy and data retention ==
+3\. Create a page restricted to authorized users and add the shortcode `\[orthogrowth]`.
 
-OrthoGrowth stores patient names, measurement dates, measurements and calculation results. Authorized non-administrator users can access only records they created; site administrators can access all records. The plugin registers WordPress personal-data exporter and eraser callbacks for records associated with a WordPress account. Erasing an account's OrthoGrowth data permanently deletes records created by that account.
+4\. Test with fictitious data before any real use.
 
-By default, uninstalling the plugin preserves saved records. An administrator can explicitly enable permanent deletion on uninstall in the OrthoGrowth administration menu. If enabled, uninstalling deletes records for the relevant site; with network activation, the setting is evaluated separately for each site. Keep secure backups and establish a retention policy appropriate to your jurisdiction.
 
-== Frequently Asked Questions ==
 
-= Does OrthoGrowth provide a clinical diagnosis? =
-No. It provides estimates only. It is not a validated medical device and must not be used alone to make treatment decisions.
+See \[`readme.txt`](readme.txt) for privacy, data retention and the changelog. The site owner is responsible for access control, secure hosting, HTTPS and compliance with applicable health-data laws.
 
-= Who can view saved records? =
-Authorized users can view their own records. Site administrators can view all records.
 
-= Can I export or erase records associated with a WordPress account? =
-Yes. The plugin provides callbacks for the WordPress personal-data export and erasure tools. The eraser permanently deletes OrthoGrowth records created by the account being processed.
 
-= What happens when the plugin is uninstalled? =
-Records are preserved by default. Permanent deletion occurs only if an administrator enabled the corresponding option before uninstalling. On multisite, this setting is applied per site.
+\### Native application for Windows and Linux (\[`native/`](native/))
 
-== Sources and attribution ==
+Standalone and offline, written in Rust with the Slint interface: a single executable of about 6 MB, no WordPress, no browser, no installation. Records are readable `.json` files stored next to the program.
 
-The multiplier-method approach is based on published orthopedic literature, including:
+Download it from the \[Releases](https://github.com/RedaAmani/OrthoGrowth/releases) page. Build instructions are in \[`native/README.md`](native/README.md).
 
-- Paley D, Bhave A, Herzenberg JE, Bowen JR. Multiplier method for predicting limb-length discrepancy. *Journal of Bone and Joint Surgery American*. 2000;82(10):1432–1446. https://pubmed.ncbi.nlm.nih.gov/11057472/
-- Mills G, Nelson S. An improved spreadsheet for calculating limb length discrepancy and epiphysiodesis timing using the multiplier method. *Journal of Children's Orthopaedics*. 2016;10:313–319. https://doi.org/10.1007/s11832-016-0754-4
 
-The 2016 article is licensed under Creative Commons Attribution 4.0 International (CC BY 4.0): https://creativecommons.org/licenses/by/4.0/. Article-derived material must be attributed to the authors and source, linked to the license, and any changes disclosed. The source table's value for girls at 3.08 years is printed as 3.03, which appears inconsistent with adjacent rows. OrthoGrowth uses 2.03 as an inferred correction, not as a value explicitly printed in the article. This correction must be independently checked before any clinical use.
+
+\## Sources and attribution
+
+
+
+The multiplier-method approach is based on:
+
+
+
+\- Paley D, Bhave A, Herzenberg JE, Bowen JR. Multiplier method for predicting limb-length discrepancy. \*Journal of Bone and Joint Surgery American\*. 2000;82(10):1432–1446. https://pubmed.ncbi.nlm.nih.gov/11057472/
+
+\- Mills G, Nelson S. An improved spreadsheet for calculating limb length discrepancy and epiphysiodesis timing using the multiplier method. \*Journal of Children's Orthopaedics\*. 2016;10:313–319. https://doi.org/10.1007/s11832-016-0754-4
+
+
+
+The multiplier table used by both the plugin and the native application is transcribed from the 2016 article, which is licensed under \[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Changes: the values were transcribed into code, and the girls' value at 3.08 years, printed as 3.03 in the source and apparently inconsistent with adjacent rows, is replaced by 2.03 as an inferred correction (not a value printed in the article). This correction must be independently checked before any clinical use.
+
+
+
+\## Licenses
+
+\- WordPress plugin: GPL-2.0-or-later.
+
+\- Native application (`native/`): GPL-3.0 (the Slint interface is used under GPL-3.0). See `native/LICENSE`.
+
+
+
+\## Support
+
+If this project is useful to you: https://buymeacoffee.com/dramani
+
+
+
+\## En français
+
+OrthoGrowth estime l'inégalité de longueur des membres inférieurs et le moment théorique d'une épiphysiodèse par la méthode des multiplicateurs. Il existe sous deux formes : un \*\*plugin WordPress\*\* (fichiers à la racine du dépôt) et une \*\*application autonome hors ligne\*\* pour Windows et Linux (dossier `native/`, exécutables dans l'onglet Releases). Prototype non validé cliniquement : ne pas utiliser seul pour décider d'un traitement, et ne pas saisir de vraies données patient avant validation.
+
