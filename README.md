@@ -14,7 +14,7 @@ Estimates of lower-limb length discrepancy and theoretical epiphysiodesis timing
 
 
 
-\### WordPress plugin (files at the root of this repository)
+\### WordPress plugin renamed as "Pediatric Limb Length Calculator" (files at the root of this repository)
 
 Browser-based. Requires WordPress 6.2+ and PHP 8.0+. Records are stored in the WordPress database, per user.
 
@@ -22,9 +22,9 @@ Browser-based. Requires WordPress 6.2+ and PHP 8.0+. Records are stored in the W
 
 1\. Upload the plugin to `/wp-content/plugins/` (or install the plugin ZIP from the Plugins screen) and activate it.
 
-2\. Open the OrthoGrowth menu in the administration sidebar and grant access to individual users.
+2\. Open the Pediatric Limb Length Calculator menu in the administration sidebar and grant access to individual users.
 
-3\. Create a page restricted to authorized users and add the shortcode `\[orthogrowth]`.
+3\. Create a page restricted to authorized users and add the shortcode `\[pediatric-limb-length-calculator]`.
 
 4\. Test with fictitious data before any real use.
 
