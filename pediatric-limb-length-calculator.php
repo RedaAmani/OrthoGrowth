@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Pediatric Limb Length Calculator
  * Description: Browser-based estimates of limb-length discrepancy and theoretical epiphysiodesis timing.
- * Plugin URI: https://github.com/RedaAmani/Pediatric Limb Length Calculator
- * Version: 0.6.0
+ * Plugin URI: https://github.com/RedaAmani/OrthoGrowth
+ * Version: 0.6.1
  * Requires at least: 6.2
  * Requires PHP: 8.0
  * Author: Dr M.R. Amani
@@ -15,7 +15,7 @@
 if (!defined('ABSPATH')) { exit; }
 
 final class Pediatric_Limb_Length_Calculator {
-    const VERSION = '0.6.0';
+    const VERSION = '0.6.1';
     const DB_VERSION = '1.0';
     const CAPABILITY = 'pediatric_limb_length_calculator_use';
     const NONCE_ACTION = 'pediatric_limb_length_calculator_server_action';
@@ -138,7 +138,39 @@ final class Pediatric_Limb_Length_Calculator {
         $template = file_get_contents($path);
         if ($template === false) { return '<p>' . esc_html__('The Pediatric Limb Length Calculator interface could not be loaded.', 'pediatric-limb-length-calculator') . '</p>'; }
         self::enqueue_assets();
-        return $template;
+        // The template is plugin-owned markup, but sanitize its HTML before returning it through the shortcode.
+        return wp_kses($template, self::allowed_template_html());
+    }
+
+    /**
+     * HTML elements and attributes required by the static application template.
+     * Keep this allowlist narrow: the template does not need scripts or event-handler attributes.
+     */
+    private static function allowed_template_html() {
+        return [
+            'div' => ['id' => true, 'class' => true, 'style' => true, 'role' => true],
+            'header' => ['id' => true, 'class' => true],
+            'main' => ['id' => true, 'class' => true],
+            'section' => ['id' => true, 'class' => true],
+            'h1' => ['id' => true, 'class' => true, 'style' => true],
+            'h2' => ['id' => true, 'class' => true, 'style' => true],
+            'p' => ['id' => true, 'class' => true, 'style' => true],
+            'label' => ['id' => true, 'class' => true, 'for' => true],
+            'input' => ['id' => true, 'class' => true, 'type' => true, 'autocomplete' => true, 'maxlength' => true, 'min' => true, 'max' => true, 'step' => true, 'placeholder' => true, 'aria-label' => true],
+            'select' => ['id' => true, 'class' => true],
+            'option' => ['value' => true],
+            'table' => ['id' => true, 'class' => true],
+            'thead' => ['id' => true, 'class' => true],
+            'tbody' => ['id' => true, 'class' => true],
+            'tr' => ['id' => true, 'class' => true],
+            'th' => ['id' => true, 'class' => true],
+            'td' => ['id' => true, 'class' => true],
+            'button' => ['id' => true, 'class' => true, 'type' => true],
+            'small' => ['id' => true, 'class' => true],
+            'details' => ['id' => true, 'class' => true, 'style' => true],
+            'summary' => ['id' => true, 'class' => true],
+            'a' => ['id' => true, 'class' => true, 'href' => true, 'target' => true, 'rel' => true],
+        ];
     }
 
     public static function admin_menu() {

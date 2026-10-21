@@ -4,7 +4,7 @@ Donate link: https://buymeacoffee.com/dramani
 Tags: medical, orthopedics, calculation
 Requires at least: 6.2
 Tested up to: 7.1
-Stable tag: 0.6.0
+Stable tag: 0.6.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -59,6 +59,9 @@ The 2016 article is licensed under Creative Commons Attribution 4.0 Internationa
 
 == Upgrade Notice ==
 
+= 0.6.1 =
+Sanitizes the shortcode template markup with a dedicated HTML allowlist.
+
 = 0.6.0 =
 Renames the plugin and its WordPress-specific identifiers to Pediatric Limb Length Calculator.
 
@@ -70,6 +73,9 @@ This maintenance release clarifies security checks and documents intentional dir
 This release updates the readme, adds WordPress personal-data export and erasure support, improves record payload validation, and adds schema checks and multisite table setup. Test with fictitious data before use.
 
 == Changelog ==
+
+= 0.6.1 =
+* Sanitize the shortcode template markup with a dedicated HTML allowlist.
 
 = 0.6.0 =
 * Rename the plugin, text domain, shortcode, hooks, options, database table, assets, and related identifiers to Pediatric Limb Length Calculator.
