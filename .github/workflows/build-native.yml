@@ -1,7 +1,9 @@
 name: Compiler OrthoGrowth natif
 
-# Lancer à la main : onglet Actions > « Compiler OrthoGrowth natif » > Run workflow.
-# Publier une version : git tag native-v0.5.1 && git push origin native-v0.5.1
+# Lancer à la main : onglet Actions > « Compiler OrthoGrowth natif » > Run workflow
+#   -> produit les exécutables en artefacts (pas de Release).
+# Publier une version : créer une Release avec un tag native-vX.Y.Z (ex. native-v0.5.2)
+#   -> les ZIP sont joints à la Release.
 on:
   workflow_dispatch:
   push:
@@ -12,6 +14,7 @@ permissions:
 
 jobs:
   build:
+    name: build (${{ matrix.platform }})
     strategy:
       fail-fast: false
       matrix:
@@ -21,7 +24,9 @@ jobs:
             bin: OrthoGrowth.exe
             # Intègre le runtime C au programme : aucun « Visual C++ Redistributable » à installer.
             rustflags: "-C target-feature=+crt-static"
-          - os: ubuntu-latest
+          # Ubuntu 24.04 figé (et non ubuntu-latest, qui passe à Ubuntu 26) : le binaire Linux
+          # est lié à la version de la bibliothèque système (glibc) de la machine qui le compile.
+          - os: ubuntu-24.04
             platform: linux-x64
             bin: OrthoGrowth
     runs-on: ${{ matrix.os }}
@@ -31,7 +36,7 @@ jobs:
       run:
         working-directory: native
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
         with:
@@ -52,7 +57,7 @@ jobs:
           cp "target/release/${{ matrix.bin }}" "$NAME/"
           cp dist-doc/LISEZ-MOI.txt "$NAME/"
           echo "NAME=$NAME" >> "$GITHUB_ENV"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ env.NAME }}
           path: native/${{ env.NAME }}
@@ -60,19 +65,20 @@ jobs:
   release:
     needs: build
     if: startsWith(github.ref, 'refs/tags/native-v')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: dist
       - name: Archives ZIP
         run: |
           chmod +x dist/*linux-x64/OrthoGrowth
           cd dist && for d in */; do zip -qr "${d%/}.zip" "$d"; done
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           name: OrthoGrowth natif ${{ github.ref_name }}
           files: dist/*.zip
+          fail_on_unmatched_files: true
           generate_release_notes: true
