@@ -3,7 +3,7 @@
  * Plugin Name: Pediatric Limb Length Calculator
  * Description: Browser-based estimates of limb-length discrepancy and theoretical epiphysiodesis timing.
  * Plugin URI: https://github.com/RedaAmani/OrthoGrowth
- * Version: 0.6.1
+ * Version: 0.6.2
  * Requires at least: 6.2
  * Requires PHP: 8.0
  * Author: Dr M.R. Amani
@@ -15,7 +15,7 @@
 if (!defined('ABSPATH')) { exit; }
 
 final class Pediatric_Limb_Length_Calculator {
-    const VERSION = '0.6.1';
+    const VERSION = '0.6.2';
     const DB_VERSION = '1.0';
     const CAPABILITY = 'pediatric_limb_length_calculator_use';
     const NONCE_ACTION = 'pediatric_limb_length_calculator_server_action';

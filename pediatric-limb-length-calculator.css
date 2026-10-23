@@ -1,1 +1,207 @@
-#pediatric_limb_length_calculator-app{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#17202b;background:#f4f6f9}#pediatric_limb_length_calculator-app *{box-sizing:border-box}#pediatric_limb_length_calculator-app{margin:0}#pediatric_limb_length_calculator-app header{background:#18324b;color:white;padding:1.2rem max(1rem,calc((100% - 1100px)/2));display:flex;gap:1rem;justify-content:space-between;align-items:center;flex-wrap:wrap}#pediatric_limb_length_calculator-app h1{margin:0;font-size:1.6rem;color:#f5f1e8!important}#pediatric_limb_length_calculator-app header p{margin:.3rem 0 0;color:#d8e3ed}#pediatric_limb_length_calculator-app .wrap{max-width:1100px;margin:1rem auto;padding:0 1rem 2rem}#pediatric_limb_length_calculator-app .notice{border-left:4px solid #b7791f;background:#fff7e6;padding:.9rem 1rem;margin-bottom:1rem;border-radius:6px}#pediatric_limb_length_calculator-app .panel{background:white;border:1px solid #d9e0e8;border-radius:10px;padding:1rem;margin:1rem 0;box-shadow:0 1px 2px #10203008}#pediatric_limb_length_calculator-app h2{font-size:1.15rem;margin:.1rem 0 1rem}#pediatric_limb_length_calculator-app h3{font-size:1rem;margin:1rem 0 .5rem}#pediatric_limb_length_calculator-app .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.8rem}#pediatric_limb_length_calculator-app .field{display:flex;flex-direction:column;gap:.3rem}#pediatric_limb_length_calculator-app label{font-size:.9rem;font-weight:650}#pediatric_limb_length_calculator-app input,#pediatric_limb_length_calculator-app select{width:100%;padding:.65rem;border:1px solid #aebac7;border-radius:6px;background:white;font:inherit}#pediatric_limb_length_calculator-app input:focus,#pediatric_limb_length_calculator-app select:focus{outline:2px solid #8ab4e0;border-color:#315f87}#pediatric_limb_length_calculator-app .muted{color:#526273;font-size:.9rem}#pediatric_limb_length_calculator-app .small{font-size:.82rem}#pediatric_limb_length_calculator-app .actions{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem}#pediatric_limb_length_calculator-app button{border:0;border-radius:6px;padding:.7rem 1rem;font:inherit;font-weight:650;background:#1c527d;color:white;cursor:pointer}#pediatric_limb_length_calculator-app button.secondary{background:#e6edf3;color:#17344c}#pediatric_limb_length_calculator-app button:hover{filter:brightness(.96)}#pediatric_limb_length_calculator-app .results{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:.7rem}#pediatric_limb_length_calculator-app .tile{background:#f2f6fa;border:1px solid #d9e4ed;border-radius:8px;padding:.8rem}#pediatric_limb_length_calculator-app .tile small{display:block;color:#526273}#pediatric_limb_length_calculator-app .value{font-size:1.35rem;font-weight:750;margin-top:.3rem;overflow-wrap:anywhere}#pediatric_limb_length_calculator-app .status{margin-top:.8rem;font-weight:650}#pediatric_limb_length_calculator-app .error{color:#a12622}#pediatric_limb_length_calculator-app .ok{color:#216a43}#pediatric_limb_length_calculator-app .tablewrap{overflow:auto}#pediatric_limb_length_calculator-app table{border-collapse:collapse;width:100%;font-size:.9rem}#pediatric_limb_length_calculator-app td,#pediatric_limb_length_calculator-app th{padding:.55rem;border-bottom:1px solid #e1e7ed;text-align:left}#pediatric_limb_length_calculator-app th{background:#f4f7fa}#pediatric_limb_length_calculator-app footer{color:#526273;font-size:.82rem;margin:1.5rem 0}#pediatric_limb_length_calculator-app details summary{cursor:pointer;font-weight:650}#pediatric_limb_length_calculator-app .hidden{display:none!important}#pediatric_limb_length_calculator-app .saved-list{display:grid;grid-template-columns:minmax(240px,1fr) auto auto;gap:.6rem;align-items:end}@media(max-width:650px){#pediatric_limb_length_calculator-app .saved-list{grid-template-columns:1fr}}@media print{#pediatric_limb_length_calculator-app{background:white}#pediatric_limb_length_calculator-app header{background:white;color:#17202b;padding:1rem}#pediatric_limb_length_calculator-app header h1{color:#17202b!important}#pediatric_limb_length_calculator-app .wrap{max-width:none}#pediatric_limb_length_calculator-app .actions,#pediatric_limb_length_calculator-app header select{display:none}#pediatric_limb_length_calculator-app .panel{break-inside:avoid;box-shadow:none}}
+#pediatric_limb_length_calculator-app {
+    font-family:system-ui, -apple-system, Segoe UI, sans-serif;
+    color:#17202b;
+    background:#f4f6f9
+}
+#pediatric_limb_length_calculator-app * {
+    box-sizing:border-box
+}
+#pediatric_limb_length_calculator-app {
+    margin:0
+}
+#pediatric_limb_length_calculator-app header {
+    background:#18324b;
+    color:white;
+    padding:1.2rem max(1rem, calc((100% - 1100px)/2));
+    display:flex;
+    gap:1rem;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap
+}
+#pediatric_limb_length_calculator-app h1 {
+    margin:0;
+    font-size:1.6rem;
+    color:#f5f1e8!important
+}
+#pediatric_limb_length_calculator-app header p {
+    margin:.3rem 0 0;
+    color:#d8e3ed
+}
+#pediatric_limb_length_calculator-app .wrap {
+    max-width:1100px;
+    margin:1rem auto;
+    padding:0 1rem 2rem
+}
+#pediatric_limb_length_calculator-app .notice {
+    border-left:4px solid #b7791f;
+    background:#fff7e6;
+    padding:.9rem 1rem;
+    margin-bottom:1rem;
+    border-radius:6px
+}
+#pediatric_limb_length_calculator-app .panel {
+    background:white;
+    border:1px solid #d9e0e8;
+    border-radius:10px;
+    padding:1rem;
+    margin:1rem 0;
+    box-shadow:0 1px 2px #10203008
+}
+#pediatric_limb_length_calculator-app h2 {
+    font-size:1.15rem;
+    margin:.1rem 0 1rem
+}
+#pediatric_limb_length_calculator-app h3 {
+    font-size:1rem;
+    margin:1rem 0 .5rem
+}
+#pediatric_limb_length_calculator-app .grid {
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+    gap:.8rem
+}
+#pediatric_limb_length_calculator-app .field {
+    display:flex;
+    flex-direction:column;
+    gap:.3rem
+}
+#pediatric_limb_length_calculator-app label {
+    font-size:.9rem;
+    font-weight:650
+}
+#pediatric_limb_length_calculator-app input, #pediatric_limb_length_calculator-app select {
+    width:100%;
+    padding:.65rem;
+    border:1px solid #aebac7;
+    border-radius:6px;
+    background:white;
+    font:inherit
+}
+#pediatric_limb_length_calculator-app input:focus, #pediatric_limb_length_calculator-app select:focus {
+    outline:2px solid #8ab4e0;
+    border-color:#315f87
+}
+#pediatric_limb_length_calculator-app .muted {
+    color:#526273;
+    font-size:.9rem
+}
+#pediatric_limb_length_calculator-app .small {
+    font-size:.82rem
+}
+#pediatric_limb_length_calculator-app .actions {
+    display:flex;
+    gap:.6rem;
+    flex-wrap:wrap;
+    margin-top:1rem
+}
+#pediatric_limb_length_calculator-app button {
+    border:0;
+    border-radius:6px;
+    padding:.7rem 1rem;
+    font:inherit;
+    font-weight:650;
+    background:#1c527d;
+    color:white;
+    cursor:pointer
+}
+#pediatric_limb_length_calculator-app button.secondary {
+    background:#e6edf3;
+    color:#17344c
+}
+#pediatric_limb_length_calculator-app button:hover {
+    filter:brightness(.96)
+}
+#pediatric_limb_length_calculator-app .results {
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(190px, 1fr));
+    gap:.7rem
+}
+#pediatric_limb_length_calculator-app .tile {
+    background:#f2f6fa;
+    border:1px solid #d9e4ed;
+    border-radius:8px;
+    padding:.8rem
+}
+#pediatric_limb_length_calculator-app .tile small {
+    display:block;
+    color:#526273
+}
+#pediatric_limb_length_calculator-app .value {
+    font-size:1.35rem;
+    font-weight:750;
+    margin-top:.3rem;
+    overflow-wrap:anywhere
+}
+#pediatric_limb_length_calculator-app .status {
+    margin-top:.8rem;
+    font-weight:650
+}
+#pediatric_limb_length_calculator-app .error {
+    color:#a12622
+}
+#pediatric_limb_length_calculator-app .ok {
+    color:#216a43
+}
+#pediatric_limb_length_calculator-app .tablewrap {
+    overflow:auto
+}
+#pediatric_limb_length_calculator-app table {
+    border-collapse:collapse;
+    width:100%;
+    font-size:.9rem
+}
+#pediatric_limb_length_calculator-app td, #pediatric_limb_length_calculator-app th {
+    padding:.55rem;
+    border-bottom:1px solid #e1e7ed;
+    text-align:left
+}
+#pediatric_limb_length_calculator-app th {
+    background:#f4f7fa
+}
+#pediatric_limb_length_calculator-app footer {
+    color:#526273;
+    font-size:.82rem;
+    margin:1.5rem 0
+}
+#pediatric_limb_length_calculator-app details summary {
+    cursor:pointer;
+    font-weight:650
+}
+#pediatric_limb_length_calculator-app .hidden {
+    display:none!important
+}
+#pediatric_limb_length_calculator-app .saved-list {
+    display:grid;
+    grid-template-columns:minmax(240px, 1fr) auto auto;
+    gap:.6rem;
+    align-items:end
+}
+@media(max-width:650px) {
+    #pediatric_limb_length_calculator-app .saved-list {
+        grid-template-columns:1fr
+    }
+}
+@media print {
+    #pediatric_limb_length_calculator-app {
+        background:white
+    }
+    #pediatric_limb_length_calculator-app header {
+        background:white;
+        color:#17202b;
+        padding:1rem
+    }
+    #pediatric_limb_length_calculator-app header h1 {
+        color:#17202b!important
+    }
+    #pediatric_limb_length_calculator-app .wrap {
+        max-width:none
+    }
+    #pediatric_limb_length_calculator-app .actions, #pediatric_limb_length_calculator-app header select {
+        display:none
+    }
+    #pediatric_limb_length_calculator-app .panel {
+        break-inside:avoid;
+        box-shadow:none
+    }
+}

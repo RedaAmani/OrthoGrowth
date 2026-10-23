@@ -4,7 +4,7 @@ Donate link: https://buymeacoffee.com/dramani
 Tags: medical, orthopedics, calculation
 Requires at least: 6.2
 Tested up to: 7.1
-Stable tag: 0.6.1
+Stable tag: 0.6.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -19,6 +19,12 @@ Authorized users can create and manage their own records. Site administrators ca
 **Clinical disclaimer:** Pediatric Limb Length Calculator is a calculation prototype, not a clinically validated medical device. Its calculations, assumptions, multiplier data and inferred correction described below require independent verification. Do not use it as the sole basis for diagnosis, treatment planning or epiphysiodesis decisions. Verify all measurements and results with a qualified specialist.
 
 The site owner is responsible for access control, secure hosting, HTTPS, protected backups, appropriate retention, and compliance with applicable privacy and health-data laws. Do not enter real patient data into a test or publicly accessible installation.
+
+== Source code and development ==
+
+The plugin JavaScript and CSS are provided as readable, non-minified source files: `pediatric-limb-length-calculator.js` and `pediatric-limb-length-calculator.css`. These files are maintained in the public project repository: https://github.com/RedaAmani/OrthoGrowth
+
+No compilation, bundling or minification step is required. Developers can inspect and modify these files directly. The plugin's PHP, JavaScript, CSS and template files are included in the plugin package under the GPL-compatible license stated above.
 
 == Installation ==
 
@@ -59,6 +65,9 @@ The 2016 article is licensed under Creative Commons Attribution 4.0 Internationa
 
 == Upgrade Notice ==
 
+= 0.6.2 =
+Makes the distributed JavaScript and CSS human-readable and documents the public source repository.
+
 = 0.6.1 =
 Sanitizes the shortcode template markup with a dedicated HTML allowlist.
 
@@ -73,6 +82,10 @@ This maintenance release clarifies security checks and documents intentional dir
 This release updates the readme, adds WordPress personal-data export and erasure support, improves record payload validation, and adds schema checks and multisite table setup. Test with fictitious data before use.
 
 == Changelog ==
+
+= 0.6.2 =
+* Format the distributed JavaScript and CSS as readable source code instead of compressed one-line assets.
+* Document the public source repository and clarify that no build step is required.
 
 = 0.6.1 =
 * Sanitize the shortcode template markup with a dedicated HTML allowlist.
