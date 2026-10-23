@@ -133,4 +133,5 @@ pub fn apply(ui: &MainWindow, m: &HashMap<String, String>) {
     t.set_about_website(m["aboutWebsite"].as_str().into());
     t.set_about_donate(m["aboutDonate"].as_str().into());
     t.set_about_close(m["aboutClose"].as_str().into());
+    t.set_about_cc(m["aboutCc"].as_str().into());
 }

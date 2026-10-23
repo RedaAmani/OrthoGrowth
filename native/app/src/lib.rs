@@ -21,12 +21,13 @@ const BASIS: [&str; 2] = ["chronological", "bone"];
 const UNIT: [&str; 2] = ["mm", "cm"];
 const METHOD: [&str; 5] = ["", "Greulich-Pyle", "Tanner-Whitehouse", "Dimeglio", "Other"];
 const SCEN: [&str; 2] = ["congenital", "developmental"];
-const URLS: [&str; 5] = [
+const URLS: [&str; 6] = [
     "https://link.springer.com/article/10.1007/s11832-016-0754-4",
     "https://link.springer.com/article/10.1007/s11832-016-0754-4/tables/1",
     "https://pubmed.ncbi.nlm.nih.gov/11057472/",
     "https://github.com/RedaAmani/OrthoGrowth",
     "https://buymeacoffee.com/dramani",
+    "https://creativecommons.org/licenses/by/4.0/",
 ];
 
 #[derive(Clone)]

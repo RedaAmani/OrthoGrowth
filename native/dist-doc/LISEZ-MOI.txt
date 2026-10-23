@@ -1,4 +1,4 @@
-OrthoGrowth 0.5.1 - application autonome hors ligne (Rust + Slint)
+OrthoGrowth 0.5.2 - application autonome hors ligne (Rust + Slint)
 
 MENU
   Fichier > Ouvrir le dossier des données, Quitter. Aide > À propos (version, crédits, licence, liens).
@@ -29,3 +29,14 @@ AVERTISSEMENTS
   "Informations complémentaires" puis "Exécuter quand même".
 
 Licence : GPL-2.0-or-later (comme le plugin WordPress). Interface : Slint (GPL-3.0 ou licence commerciale).
+
+SOURCES ET ATTRIBUTION
+  Méthode des multiplicateurs : Paley D, Bhave A, Herzenberg JE, Bowen JR. J Bone Joint Surg Am 2000;82(10):1432-1446
+  (https://pubmed.ncbi.nlm.nih.gov/11057472/).
+  Tableau des multiplicateurs : Mills G, Nelson S. J Child Orthop 2016;10:313-319 (https://doi.org/10.1007/s11832-016-0754-4),
+  publié sous licence CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/).
+  Modifications : valeurs retranscrites dans le programme ; la valeur féminine à 3,08 ans, imprimée 3,03 dans la source et
+  incohérente avec les lignes voisines, est remplacée par 2,03 (correction déduite, non imprimée dans l'article, à vérifier
+  avant tout usage clinique).
+  Conçu par Dr M.R. Amani, avec la contribution de ChatGPT (OpenAI) et de Claude (Anthropic).
+  Code source : https://github.com/RedaAmani/OrthoGrowth

@@ -122,12 +122,13 @@
   "menuAbout": "À propos d’OrthoGrowth",
   "aboutVersion": "Version",
   "aboutDesc": "Estimateur local de l’inégalité de longueur des membres inférieurs et du moment théorique d’une épiphysiodèse, par la méthode des multiplicateurs. L’application fonctionne entièrement hors ligne : aucune donnée n’est envoyée sur Internet.",
-  "aboutCredits": "Conçu par M.R. Amani, avec la contribution de ChatGPT (OpenAI) et de Claude (Anthropic).",
-  "aboutMethod": "Méthode : multiplicateurs de Mills et Nelson (2016), d’après le principe de Paley et al. (2000).",
+  "aboutCredits": "Conçu par Dr M.R. Amani, avec la contribution de ChatGPT (OpenAI) et de Claude (Anthropic).",
+  "aboutMethod": "Méthode : multiplicateurs de Paley et al. (2000). Tableau issu de Mills et Nelson (2016), licence CC BY 4.0 ; valeurs retranscrites, avec une correction déduite chez les filles à 3,08 ans (voir l’onglet Table).",
   "aboutLicense": "Logiciel libre sous licence GPL-3.0 (interface : Slint, également GPL-3.0). Le code source est disponible sur le dépôt GitHub du projet.",
   "aboutWebsite": "Site web (GitHub)",
   "aboutDonate": "Faire un don",
-  "aboutClose": "Fermer"
+  "aboutClose": "Fermer",
+  "aboutCc": "Licence CC BY 4.0"
  },
  "en": {
   "subtitle": "Local lower-limb length discrepancy estimator",
@@ -252,11 +253,12 @@
   "menuAbout": "About OrthoGrowth",
   "aboutVersion": "Version",
   "aboutDesc": "Local estimator of lower-limb length discrepancy and of the theoretical timing of an epiphysiodesis, using the multiplier method. The application works entirely offline: no data is sent over the Internet.",
-  "aboutCredits": "Designed by M.R. Amani, with contributions from ChatGPT (OpenAI) and Claude (Anthropic).",
-  "aboutMethod": "Method: Mills & Nelson (2016) multipliers, based on the principle of Paley et al. (2000).",
+  "aboutCredits": "Designed by Dr M.R. Amani, with contributions from ChatGPT (OpenAI) and Claude (Anthropic).",
+  "aboutMethod": "Method: multipliers of Paley et al. (2000). Table from Mills & Nelson (2016), CC BY 4.0 licence; values transcribed, with an inferred correction for girls at 3.08 years (see the Table tab).",
   "aboutLicense": "Free software under the GPL-3.0 licence (interface: Slint, also GPL-3.0). The source code is available on the project’s GitHub repository.",
   "aboutWebsite": "Website (GitHub)",
   "aboutDonate": "Donate",
-  "aboutClose": "Close"
+  "aboutClose": "Close",
+  "aboutCc": "CC BY 4.0 licence"
  }
 }

@@ -26,10 +26,16 @@ Page **Releases** du dépôt : `OrthoGrowth-<version>-windows-x64.zip` ou `-linu
 `Cargo.lock` fige Slint 1.16.1, qui compile avec Rust 1.89 ou plus récent.
 
 ## Publier une version
-Onglet **Actions** > « Compiler OrthoGrowth natif » > *Run workflow* pour obtenir les exécutables en artefacts,
-ou créer un tag pour publier une release :
+- Essai : onglet **Actions** > « Compiler OrthoGrowth natif » > *Run workflow* (exécutables en artefacts, sans Release).
+- Release : page **Releases** > *Draft a new release* > nouveau tag `native-vX.Y.Z` > *Publish release*. Les ZIP Windows et
+  Linux sont joints à la Release au bout de quelques minutes. Avant de publier, mettre à jour la version dans `core/Cargo.toml`,
+  `app/Cargo.toml` et `app/app.rc`, puis lancer `cargo update --workspace` pour que `Cargo.lock` reste cohérent.
 
-    git tag native-v0.5.1 && git push origin native-v0.5.1
+## Sources et attribution
+Méthode : Paley et al. (2000), <https://pubmed.ncbi.nlm.nih.gov/11057472/>. Tableau des multiplicateurs : Mills et Nelson (2016),
+<https://doi.org/10.1007/s11832-016-0754-4>, licence [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Modifications : valeurs
+retranscrites ; la valeur féminine à 3,08 ans (3,03 dans la source, incohérente) est remplacée par 2,03, correction déduite à vérifier.
+Détails dans le README à la racine du dépôt.
 
 ## Licence
 Ce dossier est sous **GPL-3.0** (voir `LICENSE`), car l'interface Slint est utilisée sous GPL-3.0.
