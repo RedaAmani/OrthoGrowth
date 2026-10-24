@@ -1,13 +1,29 @@
 name: Compiler OrthoGrowth natif
 
-# Lancer à la main : onglet Actions > « Compiler OrthoGrowth natif » > Run workflow
-#   -> produit les exécutables en artefacts (pas de Release).
-# Publier une version : créer une Release avec un tag native-vX.Y.Z (ex. native-v0.5.2)
-#   -> les ZIP sont joints à la Release.
+# Trois façons de le lancer :
+# 1. Actions > « Compiler OrthoGrowth natif » > Run workflow, champ « tag » VIDE
+#    -> exécutables en artefacts seulement (essai, aucune Release).
+# 2. Même chose avec le champ « tag » rempli (ex. native-v0.5.2)
+#    -> crée la Release de ce tag, ou complète celle qui existe, et y joint les ZIP.
+# 3. Releases > Draft a new release > tag native-vX.Y.Z > Publish release
+#    -> les ZIP sont joints automatiquement.
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag de la Release à créer ou compléter (ex. native-v0.5.2). Vide = artefacts seulement."
+        required: false
+        default: ""
+        type: string
+  release:
+    types: [published]
   push:
     tags: ["native-v*"]
+
+# Si deux déclencheurs partent pour le même tag, un seul run va jusqu'au bout.
+concurrency:
+  group: native-${{ github.ref }}-${{ github.event.inputs.tag }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -15,6 +31,8 @@ permissions:
 jobs:
   build:
     name: build (${{ matrix.platform }})
+    # Les Releases du plugin (autres tags) ne déclenchent pas cette compilation.
+    if: github.event_name != 'release' || startsWith(github.event.release.tag_name, 'native-v')
     strategy:
       fail-fast: false
       matrix:
@@ -63,12 +81,22 @@ jobs:
           path: native/${{ env.NAME }}
 
   release:
+    name: release (joindre les ZIP)
     needs: build
-    if: startsWith(github.ref, 'refs/tags/native-v')
+    # Release demandée par un tag poussé, par la publication d'une Release, ou par le champ « tag » du lancement manuel.
+    if: github.event_name == 'push' || github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '')
     runs-on: ubuntu-24.04
     permissions:
       contents: write
+    env:
+      TAG: ${{ github.event.inputs.tag || github.event.release.tag_name || github.ref_name }}
     steps:
+      - name: Vérifier le nom du tag
+        run: |
+          case "$TAG" in
+            native-v*) echo "Release visée : $TAG" ;;
+            *) echo "Le tag doit commencer par native-v (reçu : '$TAG')"; exit 1 ;;
+          esac
       - uses: actions/download-artifact@v8
         with:
           path: dist
@@ -76,9 +104,9 @@ jobs:
         run: |
           chmod +x dist/*linux-x64/OrthoGrowth
           cd dist && for d in */; do zip -qr "${d%/}.zip" "$d"; done
+          ls -la
       - uses: softprops/action-gh-release@v3
         with:
-          name: OrthoGrowth natif ${{ github.ref_name }}
+          tag_name: ${{ env.TAG }}
           files: dist/*.zip
           fail_on_unmatched_files: true
-          generate_release_notes: true
