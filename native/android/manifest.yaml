@@ -7,6 +7,6 @@ android:
     version_name: "0.5.2"
     sdk:
       min_sdk_version: 26      # minimum exigé par le support Android de Slint
-      target_sdk_version: 34
+      target_sdk_version: 33   # xbuild embarque ses propres bibliothèques Android, jusqu'à l'API 33
     application:
       label: OrthoGrowth
