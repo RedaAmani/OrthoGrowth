@@ -24,8 +24,8 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: native
-      - name: Outils de compilation (clang, lld)
-        run: sudo apt-get update && sudo apt-get install -y clang lld
+      - name: Outils de compilation (clang, lld, llvm)
+        run: sudo apt-get update && sudo apt-get install -y clang lld llvm
       - name: Installer xbuild (outil de compilation d'APK)
         run: cargo install --git https://github.com/rust-mobile/xbuild.git --rev e67b501cbe0e9ca5436c223aa7ec0fe5e27544d1
       - name: Diagnostic de l'environnement Android
