@@ -1,0 +1,48 @@
+name: Compiler OrthoGrowth Android (test)
+
+# VERSION DE TEST. L'APK est signé avec une clé jetable, recréée à chaque exécution : un APK ne peut donc pas
+# s'installer par-dessus celui d'une exécution précédente. Désinstaller l'ancien d'abord (les dossiers enregistrés
+# dans l'application disparaissent avec lui). Ne pas saisir de vraies données patient.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  apk:
+    name: apk (arm64)
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: native
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: native
+      - name: Installer xbuild (outil de compilation d'APK)
+        run: cargo install --git https://github.com/rust-mobile/xbuild.git --rev e67b501cbe0e9ca5436c223aa7ec0fe5e27544d1
+      - name: Diagnostic de l'environnement Android
+        run: x doctor || true
+      - name: Clé de signature jetable
+        run: |
+          openssl req -x509 -newkey rsa:2048 -nodes -keyout "$RUNNER_TEMP/key.pem" -out "$RUNNER_TEMP/cert.pem" -days 10000 -subj "/CN=OrthoGrowth test"
+          cat "$RUNNER_TEMP/key.pem" "$RUNNER_TEMP/cert.pem" > "$RUNNER_TEMP/signing.pem"
+      - name: Compiler l'APK
+        working-directory: native/android
+        run: x build --platform android --arch arm64 --format apk --release --pem "$RUNNER_TEMP/signing.pem"
+      - name: Rassembler l'APK
+        run: |
+          VERSION=$(grep -m1 '^version' app/Cargo.toml | cut -d'"' -f2)
+          APK=$(find . -name '*.apk' -path '*release*' | head -1)
+          echo "APK trouvé : $APK"
+          mkdir out
+          cp "$APK" "out/OrthoGrowth-${VERSION}-android-test.apk"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: OrthoGrowth-android-test
+          path: native/out/*.apk
