@@ -1,4 +1,6 @@
 slint::include_modules!();
+#[cfg(feature = "android-glue")]
+mod android_glue;
 mod dates;
 mod fiche;
 mod tr_gen;
@@ -245,12 +247,15 @@ fn do_fiche(ui: &MainWindow, st: &mut State) {
 fn open_path(p: &Path) {
     #[cfg(windows)] { let _ = std::process::Command::new("explorer").arg(p).spawn(); }
     #[cfg(target_os = "macos")] { let _ = std::process::Command::new("open").arg(p).spawn(); }
-    #[cfg(all(unix, not(target_os = "macos")))] { let _ = std::process::Command::new("xdg-open").arg(p).spawn(); }
+    #[cfg(all(unix, not(target_os = "macos"), not(target_os = "android")))] { let _ = std::process::Command::new("xdg-open").arg(p).spawn(); }
+    #[cfg(target_os = "android")] { let _ = p; } // pas de gestionnaire de fichiers à ouvrir depuis l'application
 }
 fn open_url(u: &str) {
     #[cfg(windows)] { let _ = std::process::Command::new("rundll32").args(["url.dll,FileProtocolHandler", u]).spawn(); }
     #[cfg(target_os = "macos")] { let _ = std::process::Command::new("open").arg(u).spawn(); }
-    #[cfg(all(unix, not(target_os = "macos")))] { let _ = std::process::Command::new("xdg-open").arg(u).spawn(); }
+    #[cfg(all(unix, not(target_os = "macos"), not(target_os = "android")))] { let _ = std::process::Command::new("xdg-open").arg(u).spawn(); }
+    #[cfg(all(target_os = "android", feature = "android-glue"))] { let _ = android_glue::open_url(u); }
+    #[cfg(not(any(unix, windows)))] { let _ = u; }
 }
 
 fn do_dates(ui: &MainWindow) {
@@ -271,6 +276,8 @@ fn do_reset(ui: &MainWindow, st: &mut State) {
 
 fn detect_lang(config: &Path) -> String {
     if let Ok(s) = std::fs::read_to_string(config) { let s = s.trim(); if s == "fr" || s == "en" { return s.to_string(); } }
+    #[cfg(all(target_os = "android", feature = "android-glue"))]
+    if let Some(sys) = android_glue::system_language() { return if sys == "fr" { "fr".into() } else { "en".into() }; }
     let env = ["LC_ALL", "LC_MESSAGES", "LANG", "LANGUAGE"].iter().filter_map(|k| std::env::var(k).ok()).find(|v| !v.is_empty());
     match env { Some(v) => if v.to_lowercase().starts_with("fr") { "fr".into() } else { "en".into() }, None => "fr".into() }
 }
@@ -325,4 +332,16 @@ pub fn build(data_dir: PathBuf) -> MainWindow {
         });
     }
     ui
+}
+
+/// Point d'entrée Android, appelé par le crate `orthogrowth-android`.
+#[cfg(target_os = "android")]
+pub fn android_start(app: slint::android::AndroidApp) {
+    #[cfg(feature = "android-glue")]
+    android_glue::register(app.vm_as_ptr(), app.activity_as_ptr());
+    slint::android::init(app.clone()).expect("initialisation Android");
+    // Dossier propre à l'application : visible en USB sous Android/data/<paquet>/files, sinon espace interne.
+    let base = app.external_data_path().or_else(|| app.internal_data_path()).expect("aucun dossier de données");
+    let ui = build(base.join("donnees"));
+    ui.run().expect("erreur d'exécution");
 }

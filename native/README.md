@@ -25,6 +25,13 @@ Page **Releases** du dépôt : `OrthoGrowth-<version>-windows-x64.zip` ou `-linu
 
 `Cargo.lock` fige Slint 1.16.1, qui compile avec Rust 1.89 ou plus récent.
 
+## Android (en cours de développement)
+- `android/` : crate qui produit la bibliothèque native de l'application (point d'entrée `android_main`, Slint avec son moteur Skia).
+  Configuration de l'APK : `android/manifest.yaml` (outil [xbuild](https://github.com/rust-mobile/xbuild)).
+- Workflow **« Compiler OrthoGrowth Android (test) »** : produit un APK de test en artefact. Il est signé avec une clé jetable
+  recréée à chaque exécution : désinstaller l'ancien APK avant d'installer le suivant (les dossiers enregistrés disparaissent avec lui).
+- Limites actuelles : l'interface n'est pas encore adaptée aux écrans étroits ; pas d'import de fichiers ; pas de clé de signature durable.
+
 ## Publier une version
 - Essai : onglet **Actions** > « Compiler OrthoGrowth natif » > *Run workflow* (exécutables en artefacts, sans Release).
 - Release : page **Releases** > *Draft a new release* > nouveau tag `native-vX.Y.Z` > *Publish release*. Les ZIP Windows et

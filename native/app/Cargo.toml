@@ -17,8 +17,13 @@ path = "src/main.rs"
 
 [dependencies]
 orthogrowth-core = { path = "../core" }
-slint = { version = "1", default-features = false, features = ["std", "compat-1-2", "backend-winit", "renderer-software", "software-renderer-systemfonts"] }
+slint = { version = "1", default-features = false, features = ["std", "compat-1-2", "backend-winit", "backend-android-activity-06", "renderer-software", "software-renderer-systemfonts"] }
 serde_json = "1"
+jni = { version = "0.21", optional = true }
+
+[features]
+# Pont JNI vers Android (ouvrir un lien, langue du système) : activé par le crate `android`.
+android-glue = ["dep:jni"]
 
 [build-dependencies]
 slint-build = "1"

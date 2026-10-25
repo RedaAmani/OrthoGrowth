@@ -1,0 +1,16 @@
+[package]
+name = "orthogrowth-android"
+version = "0.5.2"
+edition = "2021"
+rust-version = "1.89"
+license = "GPL-3.0-only"
+description = "OrthoGrowth pour Android : point d'entrée de l'application (le reste est dans le crate `orthogrowth`)"
+publish = false
+
+[lib]
+name = "orthogrowth"
+crate-type = ["cdylib"]
+
+[dependencies]
+orthogrowth-app = { package = "orthogrowth", path = "../app", features = ["android-glue"] }
+slint = { version = "1", default-features = false, features = ["std", "compat-1-2", "backend-android-activity-06"] }

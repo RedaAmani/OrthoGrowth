@@ -14,7 +14,8 @@ impl Platform for P {
 fn main() {
     let out = std::env::args().nth(1).unwrap_or_else(|| "/tmp/shots".into());
     std::fs::create_dir_all(&out).unwrap();
-    let (w, h) = (1100u32, 900u32);
+    let w: u32 = std::env::var("SHOT_W").ok().and_then(|v| v.parse().ok()).unwrap_or(1100);
+    let h: u32 = std::env::var("SHOT_H").ok().and_then(|v| v.parse().ok()).unwrap_or(900);
     let window = MinimalSoftwareWindow::new(RepaintBufferType::NewBuffer);
     slint::platform::set_platform(Box::new(P(window.clone()))).unwrap();
     let data = std::env::temp_dir().join(format!("og-shot-{}", std::process::id()));

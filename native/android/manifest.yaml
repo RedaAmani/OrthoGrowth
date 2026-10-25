@@ -1,0 +1,12 @@
+# Configuration xbuild de l'APK Android.
+icon: assets/icon.png
+android:
+  manifest:
+    package: io.github.redaamani.orthogrowth
+    version_code: 502
+    version_name: "0.5.2"
+    sdk:
+      min_sdk_version: 26      # minimum exigé par le support Android de Slint
+      target_sdk_version: 34
+    application:
+      label: OrthoGrowth
