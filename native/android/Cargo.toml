@@ -8,7 +8,6 @@ description = "OrthoGrowth pour Android : point d'entrée de l'application (le r
 publish = false
 
 [lib]
-name = "orthogrowth"
 crate-type = ["cdylib"]
 
 [dependencies]
