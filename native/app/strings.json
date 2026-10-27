@@ -128,7 +128,8 @@
   "aboutWebsite": "Site web (GitHub)",
   "aboutDonate": "Faire un don",
   "aboutClose": "Fermer",
-  "aboutCc": "Licence CC BY 4.0"
+  "aboutCc": "Licence CC BY 4.0",
+  "share": "Partager le résultat"
  },
  "en": {
   "subtitle": "Local lower-limb length discrepancy estimator",
@@ -259,6 +260,7 @@
   "aboutWebsite": "Website (GitHub)",
   "aboutDonate": "Donate",
   "aboutClose": "Close",
-  "aboutCc": "CC BY 4.0 licence"
+  "aboutCc": "CC BY 4.0 licence",
+  "share": "Share the result"
  }
 }

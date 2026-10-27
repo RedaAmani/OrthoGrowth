@@ -22,6 +22,7 @@ fn main() {
     let _ = std::fs::remove_dir_all(&data);
     let ui = build(data.join("donnees"));
     window.set_size(PhysicalSize::new(w, h));
+    if std::env::var("SHOT_MOBILE").is_ok() { ui.set_mobile(true); }
     ui.show().unwrap();
     let shot = |name: &str| {
         slint::platform::update_timers_and_animations();

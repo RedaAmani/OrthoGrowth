@@ -28,9 +28,12 @@ Page **Releases** du dépôt : `OrthoGrowth-<version>-windows-x64.zip` ou `-linu
 ## Android (en cours de développement)
 - `android/` : crate qui produit la bibliothèque native de l'application (point d'entrée `android_main`, Slint avec son moteur Skia).
   Configuration de l'APK : `android/manifest.yaml` (outil [xbuild](https://github.com/rust-mobile/xbuild)).
+- Interface : une seule colonne sous 720 px de large (téléphones), navigation en bas, style Material, sans barre de menus
+  (le bloc `DESKTOP-ONLY` de `app/ui/app.slint` est retiré à la compilation Android par `app/build.rs`) ; bouton « i » (À propos)
+  dans l'en-tête ; « Partager le résultat » et « Exporter la fiche JSON » passent par le menu de partage d'Android.
 - Workflow **« Compiler OrthoGrowth Android (test) »** : produit un APK de test en artefact. Il est signé avec une clé jetable
   recréée à chaque exécution : désinstaller l'ancien APK avant d'installer le suivant (les dossiers enregistrés disparaissent avec lui).
-- Limites actuelles : l'interface n'est pas encore adaptée aux écrans étroits ; pas d'import de fichiers ; pas de clé de signature durable.
+- Limites actuelles : pas d'import de fichiers ; pas de clé de signature durable ; cible Android 13 (API 33), limite des bibliothèques d'xbuild.
 
 ## Publier une version
 - Essai : onglet **Actions** > « Compiler OrthoGrowth natif » > *Run workflow* (exécutables en artefacts, sans Release).

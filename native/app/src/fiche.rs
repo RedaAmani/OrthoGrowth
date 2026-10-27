@@ -49,3 +49,42 @@ table{{border-collapse:collapse;width:100%;font-size:14px}}th,td{{border-bottom:
         pword = esc(&g("patientWord")), rows = rows, inputs = esc(&g("inputsWord")), meas = meas, rtitle = esc(&g("resultsTitle")),
         results = results, note = esc(&g("medicalNote")), method = esc(&g("methodText")))
 }
+
+/// Version texte brut de la fiche (partage Android).
+#[cfg_attr(not(target_os = "android"), allow(dead_code))]
+pub fn text(rec: &Value, t: &HashMap<String, String>) -> String {
+    let g = |k: &str| t.get(k).cloned().unwrap_or_default();
+    let iv = |k: &str| rec["input_values"][k].as_str().unwrap_or("").to_string();
+    let rd = |k: &str| rec["result_display"][k].as_str().unwrap_or("—").to_string();
+    let unit = rec["unit"].as_str().unwrap_or("mm");
+    let mut o = String::new();
+    o += &format!("{}\n", g("ficheTitle"));
+    let name = format!("{} {}", rec["patient"]["last_name"].as_str().unwrap_or(""), rec["patient"]["first_names"].as_str().unwrap_or(""));
+    if !name.trim().is_empty() { o += &format!("{} : {}\n", g("patientWord"), name.trim()); }
+    o += &format!("{} : {}\n\n", g("dateWord"), rec["date"].as_str().unwrap_or(""));
+    let sex = if iv("sex") == "girls" { g("girls") } else { g("boys") };
+    let basis = if iv("ageBasis") == "bone" { g("bone") } else { g("chronological") };
+    let scenario = if iv("scenario") == "developmental" { g("developmental") } else { g("congenital") };
+    let mut line = |k: &str, v: String| { if !v.trim().is_empty() { o += &format!("{} : {}\n", g(k), v); } };
+    line("dobLabel", iv("dob")); line("examLabel", iv("examDate")); line("ageLabel", iv("age")); line("sexLabel", sex);
+    line("boneAgeLabel", iv("boneAge")); line("boneMethodLabel", iv("boneMethod")); line("ageBasisLabel", basis);
+    line("unitLabel", unit.to_string()); line("scenarioLabel", scenario);
+    o += &format!("\n{}\n", g("measureTitle"));
+    let pair = |label: String, r: &str, l: &str| format!("  {} : {} / {} ({} / {})\n", label, iv(r), iv(l), g("rightHead"), g("leftHead"));
+    o += &pair(g("femurLabel"), "femurR", "femurL");
+    o += &pair(g("tibiaLabel"), "tibiaR", "tibiaL");
+    if !iv("footR").is_empty() || !iv("footL").is_empty() { o += &pair(g("footLabel"), "footR", "footL"); }
+    if rec["scenario"] == "developmental" {
+        o += &format!("{} {} {}\n", g("previousTitle"), iv("prevExamDate"), iv("prevAge"));
+        o += &pair(g("previousFemurLabel"), "prevFemurR", "prevFemurL");
+        o += &pair(g("previousTibiaLabel"), "prevTibiaR", "prevTibiaL");
+    }
+    o += &format!("\n{}\n", g("resultsTitle"));
+    for (l, k) in [("multResultLabel", "multResult"), ("currentLLDLabel", "currentLLD"), ("matureLLDLabel", "matureLLD"),
+        ("matureFemurLabel", "matureFemur"), ("matureTibiaLabel", "matureTibia"), ("growthLabel", "growth"),
+        ("epiFemurLabel", "epiFemurResult"), ("epiTibiaLabel", "epiTibiaResult"), ("epiBothLabel", "epiBothResult")] {
+        o += &format!("  {} : {}\n", g(l), rd(k));
+    }
+    o += &format!("\n{}\n", g("medicalNote"));
+    o
+}

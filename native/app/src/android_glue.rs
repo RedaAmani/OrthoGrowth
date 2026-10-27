@@ -59,3 +59,35 @@ pub fn system_language() -> Option<String> {
         Ok(s)
     })
 }
+
+/// Ouvre le menu de partage d'Android avec un texte (intent ACTION_SEND).
+pub fn share_text(title: &str, text: &str) -> bool {
+    with_activity(|env, activity| {
+        let action = env.new_string("android.intent.action.SEND")?;
+        let send = env.new_object("android/content/Intent", "(Ljava/lang/String;)V", &[JValue::Object(&action)])?;
+        let mime = env.new_string("text/plain")?;
+        env.call_method(&send, "setType", "(Ljava/lang/String;)Landroid/content/Intent;", &[JValue::Object(&mime)])?;
+        for (key, value) in [("android.intent.extra.TEXT", text), ("android.intent.extra.SUBJECT", title)] {
+            let k = env.new_string(key)?;
+            let v = env.new_string(value)?;
+            env.call_method(
+                &send,
+                "putExtra",
+                "(Ljava/lang/String;Ljava/lang/String;)Landroid/content/Intent;",
+                &[JValue::Object(&k), JValue::Object(&v)],
+            )?;
+        }
+        let jt = env.new_string(title)?;
+        let chooser = env
+            .call_static_method(
+                "android/content/Intent",
+                "createChooser",
+                "(Landroid/content/Intent;Ljava/lang/CharSequence;)Landroid/content/Intent;",
+                &[JValue::Object(&send), JValue::Object(&jt)],
+            )?
+            .l()?;
+        env.call_method(activity, "startActivity", "(Landroid/content/Intent;)V", &[JValue::Object(&chooser)])?;
+        Ok(())
+    })
+    .is_some()
+}

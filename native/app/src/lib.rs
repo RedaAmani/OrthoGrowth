@@ -228,6 +228,8 @@ fn do_export(ui: &MainWindow, st: &mut State) {
     let Some(last) = &st.last else { return set_status(ui, &st.t("needCalcFirst"), true) };
     let name = format!("OrthoGrowth-{}-{}.json", safe_name(&last.record), stamp());
     let body = serde_json::to_string_pretty(&last.record).unwrap_or_default();
+    #[cfg(all(target_os = "android", feature = "android-glue"))]
+    { let _ = android_glue::share_text(&name, &body); }
     match write_file(&st.store.dir, "exports", &name, &body) {
         Ok(p) => set_rec_status(ui, &format!("{} {}", st.t("exportedTo"), p.display()), false),
         Err(e) => set_rec_status(ui, &format!("{} ({e})", st.t("storageError")), true),
@@ -236,6 +238,13 @@ fn do_export(ui: &MainWindow, st: &mut State) {
 
 fn do_fiche(ui: &MainWindow, st: &mut State) {
     let Some(last) = &st.last else { return set_status(ui, &st.t("needCalcFirst"), true) };
+    #[cfg(target_os = "android")]
+    {
+        #[cfg(feature = "android-glue")]
+        { let ok = android_glue::share_text(&st.t("ficheTitle"), &fiche::text(&last.record, &st.strings[&st.lang])); if !ok { set_rec_status(ui, &st.t("storageError"), true); } }
+        return;
+    }
+    #[allow(unreachable_code)]
     let html = fiche::html(&last.record, &st.strings[&st.lang]);
     let name = format!("fiche-{}-{}.html", safe_name(&last.record), stamp());
     match write_file(&st.store.dir, "fiches", &name, &html) {
@@ -292,6 +301,7 @@ pub fn build(data_dir: PathBuf) -> MainWindow {
     ui.set_lang_index(if lang == "en" { 1 } else { 0 });
     ui.set_data_path(data_dir.display().to_string().into());
     ui.set_app_version(env!("CARGO_PKG_VERSION").into());
+    ui.set_mobile(cfg!(target_os = "android"));
     {
         // Icône (128×128 RGBA brut, intégré au programme) : fenêtre et panneau « À propos ».
         let mut buf = slint::SharedPixelBuffer::<slint::Rgba8Pixel>::new(128, 128);

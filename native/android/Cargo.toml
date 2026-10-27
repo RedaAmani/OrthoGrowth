@@ -8,6 +8,7 @@ description = "OrthoGrowth pour Android : point d'entrée de l'application (le r
 publish = false
 
 [lib]
+# Pas de `name` : xbuild cherche liborthogrowth_android.so (nom du paquet, tirets remplacés par des soulignés).
 crate-type = ["cdylib"]
 
 [dependencies]
