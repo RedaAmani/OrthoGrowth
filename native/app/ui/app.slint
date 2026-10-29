@@ -124,6 +124,26 @@ component NavItem inherits Rectangle {
     TouchArea { clicked => { root.clicked(); } }
 }
 
+component DrawerItem inherits Rectangle {
+    in property <string> text;
+    in property <bool> selected: false;
+    callback clicked();
+    height: 52px;
+    background: root.selected ? #e8f0f8 : (touch.pressed ? #eef2f6 : transparent);
+    Text {
+        x: 20px;
+        width: parent.width - 40px;
+        height: parent.height;
+        text: root.text;
+        font-size: 16px;
+        font-weight: root.selected ? 700 : 400;
+        color: root.selected ? #0b4a99 : #17202b;
+        vertical-alignment: center;
+        overflow: elide;
+    }
+    touch := TouchArea { clicked => { root.clicked(); } }
+}
+
 export component MainWindow inherits Window {
     title: "OrthoGrowth";
     min-width: 340px;
@@ -149,6 +169,7 @@ export component MainWindow inherits Window {
     in-out property <int> tab: 0;
     in-out property <[TableRow]> table-rows;
     in-out property <bool> about-open: false;
+    in-out property <bool> drawer-open: false;
     in property <string> app-version;
     in property <image> app-icon;
     // Vrai sur téléphone : pas de dossier à ouvrir, partage par le menu du système, bouton « À propos » dans l'en-tête.
@@ -196,39 +217,54 @@ export component MainWindow inherits Window {
     // DESKTOP-ONLY-END
 
     VerticalLayout {
+        // Marges de sécurité : barres du système (haut/bas) et clavier virtuel.
+        padding-bottom: max(root.safe-area-insets.bottom, root.virtual-keyboard-size.height);
         // ---- En-tête
         Rectangle {
             background: #18324b;
-            height: root.compact ? 56px : 64px;
+            height: (root.compact ? 56px : 64px) + root.safe-area-insets.top;
             HorizontalLayout {
-                padding-left: root.compact ? 14px : 20px;
-                padding-right: root.compact ? 10px : 20px;
-                spacing: 10px;
+                padding-top: root.safe-area-insets.top;
+                padding-left: (root.compact ? 6px : 20px) + root.safe-area-insets.left;
+                padding-right: (root.compact ? 10px : 20px) + root.safe-area-insets.right;
+                spacing: 8px;
+                if root.compact: VerticalLayout {
+                    alignment: center;
+                    width: 52px;
+                    Rectangle {
+                        height: 52px;
+                        border-radius: 26px;
+                        background: burger.pressed ? #ffffff30 : transparent;
+                        VerticalLayout {
+                            alignment: center;
+                            spacing: 5px;
+                            padding-left: 14px;
+                            padding-right: 14px;
+                            Rectangle { height: 3px; border-radius: 1.5px; background: #f5f1e8; }
+                            Rectangle { height: 3px; border-radius: 1.5px; background: #f5f1e8; }
+                            Rectangle { height: 3px; border-radius: 1.5px; background: #f5f1e8; }
+                        }
+                        burger := TouchArea { clicked => { root.drawer-open = true; } }
+                    }
+                }
                 VerticalLayout {
                     horizontal-stretch: 1;
                     alignment: center;
-                    Text { text: "OrthoGrowth"; color: #f5f1e8; font-size: root.compact ? 20px : 22px; font-weight: 700; }
+                    Text { text: "OrthoGrowth"; color: #f5f1e8; font-size: root.compact ? 18px : 22px; font-weight: 700; }
                     if !root.compact: Text { text: T.subtitle; color: #d8e3ed; font-size: 12px; }
-                }
-                VerticalLayout {
-                    alignment: center;
-                    width: root.compact ? 92px : 150px;
-                    ComboBox {
-                        model: root.compact ? ["FR", "EN"] : T.lang-options;
-                        current-index <=> root.lang-index;
-                        selected(v) => { root.lang-changed(root.lang-index); }
+                    if root.compact: Text {
+                        text: root.tab == 0 ? T.tab-calc : (root.tab == 1 ? T.tab-records : T.tab-table);
+                        color: #d8e3ed;
+                        font-size: 12px;
                     }
                 }
-                if root.mobile: VerticalLayout {
+                if !root.compact: VerticalLayout {
                     alignment: center;
-                    width: 40px;
-                    Rectangle {
-                        height: 36px;
-                        border-radius: 18px;
-                        border-width: 2px;
-                        border-color: #f5f1e8;
-                        Text { text: "i"; color: #f5f1e8; font-size: 18px; font-weight: 700; horizontal-alignment: center; vertical-alignment: center; }
-                        TouchArea { clicked => { root.about-open = true; } }
+                    width: 150px;
+                    ComboBox {
+                        model: T.lang-options;
+                        current-index <=> root.lang-index;
+                        selected(v) => { root.lang-changed(root.lang-index); }
                     }
                 }
             }
@@ -270,7 +306,10 @@ export component MainWindow inherits Window {
                     height: parent.height;
                     viewport-width: self.visible-width;
                     VerticalLayout {
-                        padding: root.compact ? 10px : 14px;
+                        padding-left: (root.compact ? 10px : 14px) + root.safe-area-insets.left;
+                        padding-right: (root.compact ? 10px : 14px) + root.safe-area-insets.right;
+                        padding-top: root.compact ? 10px : 14px;
+                        padding-bottom: root.compact ? 10px : 14px;
                         spacing: 12px;
                         alignment: start;
 
@@ -414,7 +453,10 @@ export component MainWindow inherits Window {
                     height: parent.height;
                     viewport-width: self.visible-width;
                     VerticalLayout {
-                        padding: root.compact ? 10px : 14px;
+                        padding-left: (root.compact ? 10px : 14px) + root.safe-area-insets.left;
+                        padding-right: (root.compact ? 10px : 14px) + root.safe-area-insets.right;
+                        padding-top: root.compact ? 10px : 14px;
+                        padding-bottom: root.compact ? 10px : 14px;
                         alignment: start;
                         Card {
                             title: T.records-title;
@@ -496,7 +538,10 @@ export component MainWindow inherits Window {
                     height: parent.height;
                     viewport-width: self.visible-width;
                     VerticalLayout {
-                        padding: root.compact ? 10px : 14px;
+                        padding-left: (root.compact ? 10px : 14px) + root.safe-area-insets.left;
+                        padding-right: (root.compact ? 10px : 14px) + root.safe-area-insets.right;
+                        padding-top: root.compact ? 10px : 14px;
+                        padding-bottom: root.compact ? 10px : 14px;
                         alignment: start;
                         Card {
                             title: T.table-summary;
@@ -551,16 +596,66 @@ export component MainWindow inherits Window {
                 }
             }
         }
+    }
 
-        // ---- Barre de navigation du bas (écran étroit)
-        if root.compact: Rectangle {
+    // ---- Tiroir de navigation (écran étroit) : ouvert par le bouton à trois barres de l'en-tête
+    if root.drawer-open: Rectangle {
+        x: 0px;
+        y: 0px;
+        width: root.width;
+        height: root.height;
+        background: #00000066;
+        TouchArea { clicked => { root.drawer-open = false; } }
+        FocusScope {
+            key-pressed(event) => {
+                if (event.text == Key.Escape) { root.drawer-open = false; return accept; }
+                return reject;
+            }
+            init => { self.focus(); }
+        }
+        Rectangle {
+            x: 0px;
+            y: 0px;
+            width: min(300px, root.width * 0.84);
+            height: parent.height;
             background: #ffffff;
-            height: 56px;
-            Rectangle { y: 0px; height: 1px; background: #d9e0e8; }
-            HorizontalLayout {
-                NavItem { horizontal-stretch: 1; indicator-on-top: true; text: T.tab-calc; selected: root.tab == 0; clicked => { root.tab = 0; } }
-                NavItem { horizontal-stretch: 1; indicator-on-top: true; text: T.tab-records; selected: root.tab == 1; clicked => { root.tab = 1; } }
-                NavItem { horizontal-stretch: 1; indicator-on-top: true; text: T.tab-table; selected: root.tab == 2; clicked => { root.tab = 2; } }
+            TouchArea { }
+            VerticalLayout {
+                padding-bottom: root.safe-area-insets.bottom;
+                Rectangle {
+                    background: #18324b;
+                    height: 92px + root.safe-area-insets.top;
+                    HorizontalLayout {
+                        padding-top: root.safe-area-insets.top + 14px;
+                        padding-left: 18px + root.safe-area-insets.left;
+                        padding-right: 14px;
+                        padding-bottom: 14px;
+                        spacing: 12px;
+                        Image { source: root.app-icon; width: 48px; height: 48px; }
+                        VerticalLayout {
+                            alignment: center;
+                            Text { text: "OrthoGrowth"; color: #f5f1e8; font-size: 20px; font-weight: 700; }
+                            Text { text: T.about-version + " " + root.app-version; color: #d8e3ed; font-size: 12px; }
+                        }
+                    }
+                }
+                DrawerItem { text: T.tab-calc; selected: root.tab == 0; clicked => { root.tab = 0; root.drawer-open = false; } }
+                DrawerItem { text: T.tab-records; selected: root.tab == 1; clicked => { root.tab = 1; root.drawer-open = false; } }
+                DrawerItem { text: T.tab-table; selected: root.tab == 2; clicked => { root.tab = 2; root.drawer-open = false; } }
+                Rectangle { height: 1px; background: #d9e0e8; }
+                VerticalLayout {
+                    padding: 18px;
+                    spacing: 8px;
+                    Text { text: T.language-label; font-size: 12px; font-weight: 600; color: #526273; }
+                    HorizontalLayout {
+                        spacing: 8px;
+                        Button { text: "Français"; primary: root.lang-index == 0; clicked => { root.lang-index = 0; root.lang-changed(0); } }
+                        Button { text: "English"; primary: root.lang-index == 1; clicked => { root.lang-index = 1; root.lang-changed(1); } }
+                    }
+                }
+                Rectangle { height: 1px; background: #d9e0e8; }
+                DrawerItem { text: T.menu-about; clicked => { root.drawer-open = false; root.about-open = true; } }
+                Rectangle { vertical-stretch: 1; }
             }
         }
     }
@@ -582,9 +677,9 @@ export component MainWindow inherits Window {
         }
         Rectangle {
             x: (parent.width - self.width) / 2;
-            y: (parent.height - self.height) / 2;
+            y: root.safe-area-insets.top + (parent.height - root.safe-area-insets.top - root.safe-area-insets.bottom - self.height) / 2;
             width: min(640px, root.width - 24px);
-            height: min(root.height - 24px, 600px);
+            height: min(root.height - root.safe-area-insets.top - root.safe-area-insets.bottom - 24px, 600px);
             background: #ffffff;
             border-radius: 10px;
             border-width: 1px;

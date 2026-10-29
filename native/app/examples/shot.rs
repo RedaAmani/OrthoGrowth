@@ -34,6 +34,9 @@ fn main() {
         for p in buf.as_slice() { f.write_all(&[p.r, p.g, p.b]).unwrap(); }
     };
     shot("01-vide-fr");
+    ui.set_drawer_open(true);
+    shot("01c-tiroir");
+    ui.set_drawer_open(false);
     ui.set_about_open(true);
     shot("01b-apropos-fr");
     ui.set_about_open(false);
