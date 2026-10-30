@@ -1,10 +1,22 @@
-name: Compiler OrthoGrowth Android (test)
+name: Compiler OrthoGrowth Android
 
-# VERSION DE TEST. L'APK est signé avec une clé jetable, recréée à chaque exécution : un APK ne peut donc pas
-# s'installer par-dessus celui d'une exécution précédente. Désinstaller l'ancien d'abord (les dossiers enregistrés
-# dans l'application disparaissent avec lui). Ne pas saisir de vraies données patient.
+# Lancer à la main : Actions > « Compiler OrthoGrowth Android » > Run workflow
+#   - champ « tag » vide : APK en artefact seulement ;
+#   - champ « tag » rempli (ex. native-v0.5.3) : l'APK est aussi joint à la Release de ce tag.
+# Publier une Release (tag native-vX.Y.Z) joint l'APK automatiquement.
+#
+# SIGNATURE. Avec le secret ANDROID_SIGNING_PEM (clé durable), l'APK s'installe par-dessus la version précédente.
+# Sans ce secret, une clé jetable est créée : l'APK n'est alors qu'un essai, JAMAIS joint à une Release.
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag de la Release à compléter (ex. native-v0.5.3). Vide = artefact seulement."
+        required: false
+        default: ""
+        type: string
+  release:
+    types: [published]
 
 permissions:
   contents: read
@@ -12,11 +24,25 @@ permissions:
 jobs:
   apk:
     name: apk (arm64)
+    # Les Releases du plugin (autres tags) ne déclenchent pas cette compilation.
+    if: github.event_name != 'release' || startsWith(github.event.release.tag_name, 'native-v')
     runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    env:
+      SIGNING_PEM: ${{ secrets.ANDROID_SIGNING_PEM }}
+      TAG: ${{ github.event.inputs.tag || github.event.release.tag_name }}
     defaults:
       run:
         working-directory: native
     steps:
+      - name: Vérifier le tag demandé
+        if: env.TAG != ''
+        run: |
+          case "$TAG" in
+            native-v*) echo "Release visée : $TAG" ;;
+            *) echo "Le tag doit commencer par native-v (reçu : '$TAG')"; exit 1 ;;
+          esac
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
         with:
@@ -28,23 +54,51 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y clang lld llvm
       - name: Installer xbuild (outil de compilation d'APK)
         run: cargo install --git https://github.com/rust-mobile/xbuild.git --rev e67b501cbe0e9ca5436c223aa7ec0fe5e27544d1
-      - name: Diagnostic de l'environnement Android
-        run: x doctor || true
-      - name: Clé de signature jetable
+      - name: Numéro de version Android
         run: |
-          openssl req -x509 -newkey rsa:2048 -nodes -keyout "$RUNNER_TEMP/key.pem" -out "$RUNNER_TEMP/cert.pem" -days 10000 -subj "/CN=OrthoGrowth test"
-          cat "$RUNNER_TEMP/key.pem" "$RUNNER_TEMP/cert.pem" > "$RUNNER_TEMP/signing.pem"
+          # versionCode = major*10000 + minor*100 + patch : il doit augmenter à chaque version, sinon Android refuse la mise à jour.
+          VERSION=$(grep -m1 '^version' app/Cargo.toml | cut -d'"' -f2)
+          IFS=. read -r MA MI PA <<< "$VERSION"
+          CODE=$((MA * 10000 + MI * 100 + PA))
+          sed -i -E "s/^( *version_code:).*/\1 $CODE/; s/^( *version_name:).*/\1 \"$VERSION\"/" android/manifest.yaml
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "Version $VERSION, versionCode $CODE"
+      - name: Clé de signature
+        run: |
+          if [ -n "$SIGNING_PEM" ]; then
+            printf '%s\n' "$SIGNING_PEM" > "$RUNNER_TEMP/signing.pem"
+            echo "SIGNED_WITH=durable" >> "$GITHUB_ENV"
+            echo "Signature avec la clé durable."
+          else
+            openssl req -x509 -newkey rsa:2048 -nodes -keyout "$RUNNER_TEMP/key.pem" -out "$RUNNER_TEMP/cert.pem" -days 10000 -subj "/CN=OrthoGrowth test"
+            cat "$RUNNER_TEMP/key.pem" "$RUNNER_TEMP/cert.pem" > "$RUNNER_TEMP/signing.pem"
+            echo "SIGNED_WITH=jetable" >> "$GITHUB_ENV"
+            echo "ATTENTION : clé jetable (secret ANDROID_SIGNING_PEM absent). APK d'essai seulement."
+          fi
+      - name: Empêcher une Release avec une clé jetable
+        if: env.TAG != '' && env.SIGNED_WITH != 'durable'
+        run: |
+          echo "Release demandée mais le secret ANDROID_SIGNING_PEM est absent : arrêt pour ne pas publier un APK signé avec une clé jetable."
+          exit 1
       - name: Compiler l'APK
         working-directory: native/android
         run: x build --platform android --arch arm64 --format apk --release --pem "$RUNNER_TEMP/signing.pem"
       - name: Rassembler l'APK
         run: |
-          VERSION=$(grep -m1 '^version' app/Cargo.toml | cut -d'"' -f2)
           APK=$(find . -name '*.apk' -path '*release*' | head -1)
           echo "APK trouvé : $APK"
           mkdir out
-          cp "$APK" "out/OrthoGrowth-${VERSION}-android-test.apk"
+          if [ "$SIGNED_WITH" = "durable" ]; then NAME="OrthoGrowth-${VERSION}-android.apk"; else NAME="OrthoGrowth-${VERSION}-android-test.apk"; fi
+          cp "$APK" "out/$NAME"
+          ls -la out
       - uses: actions/upload-artifact@v7
         with:
-          name: OrthoGrowth-android-test
+          name: OrthoGrowth-android
           path: native/out/*.apk
+      - name: Joindre l'APK à la Release
+        if: env.TAG != '' && env.SIGNED_WITH == 'durable'
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ env.TAG }}
+          files: native/out/*.apk
+          fail_on_unmatched_files: true
