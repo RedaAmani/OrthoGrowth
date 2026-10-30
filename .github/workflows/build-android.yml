@@ -38,6 +38,7 @@ jobs:
     steps:
       - name: Vérifier le tag demandé
         if: env.TAG != ''
+        working-directory: .
         run: |
           case "$TAG" in
             native-v*) echo "Release visée : $TAG" ;;
