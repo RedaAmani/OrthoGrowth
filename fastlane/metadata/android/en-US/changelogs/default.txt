@@ -1,0 +1,8 @@
+First public Android release.
+• Estimates lower-limb length discrepancy and the theoretical timing of an epiphysiodesis with the multiplier method (congenital and developmental models)
+• Works fully offline: no account, no ads, no tracking
+• Records stay on your device
+• Share a result with other apps
+• French and English
+• Phone-friendly interface with a side menu
+Prototype, not clinically validated: always verify results with a specialist.
