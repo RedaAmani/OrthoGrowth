@@ -32,22 +32,36 @@ jobs:
     env:
       SIGNING_PEM: ${{ secrets.ANDROID_SIGNING_PEM }}
       TAG: ${{ github.event.inputs.tag || github.event.release.tag_name }}
+      # Version exacte de Rust, figée pour des compilations reproductibles. À recopier depuis le journal d'une
+      # compilation réussie (ligne « rustc 1.xx.y ») ; elle ne change qu'en connaissance de cause.
+      RUST_VERSION: "1.XX.Y"
     defaults:
       run:
         working-directory: native
     steps:
       - name: Vérifier le tag demandé
         if: env.TAG != ''
+        # Avant l'extraction du dépôt, le dossier « native » n'existe pas encore : on travaille à la racine.
         working-directory: .
         run: |
           case "$TAG" in
             native-v*) echo "Release visée : $TAG" ;;
             *) echo "Le tag doit commencer par native-v (reçu : '$TAG')"; exit 1 ;;
           esac
+      - name: Version de Rust renseignée ?
+        run: |
+          case "$RUST_VERSION" in
+            *X*) echo "::error::RUST_VERSION vaut encore $RUST_VERSION : recopier la version de Rust utilisée (voir le commentaire dans le fichier)."; exit 1 ;;
+          esac
+      # Avec un tag, on compile exactement le commit de ce tag (et non la dernière version de la branche).
       - uses: actions/checkout@v6
-      - uses: dtolnay/rust-toolchain@stable
         with:
-          targets: aarch64-linux-android
+          ref: ${{ env.TAG != '' && format('refs/tags/{0}', env.TAG) || '' }}
+      - name: Rust (version figée)
+        run: |
+          rustup toolchain install "$RUST_VERSION" --profile minimal --target aarch64-linux-android
+          rustup default "$RUST_VERSION"
+          rustc --version --verbose
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: native
@@ -55,13 +69,23 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y clang lld llvm
       - name: Installer xbuild (outil de compilation d'APK)
         run: cargo install --git https://github.com/rust-mobile/xbuild.git --rev e67b501cbe0e9ca5436c223aa7ec0fe5e27544d1
-      - name: Numéro de version Android
+      - name: Vérifier le numéro de version Android
         run: |
-          # versionCode = major*10000 + minor*100 + patch : il doit augmenter à chaque version, sinon Android refuse la mise à jour.
+          # versionCode = major*10000 + minor*100 + patch. Les valeurs de android/manifest.yaml doivent être celles du
+          # commit compilé : on les vérifie au lieu de les réécrire, pour que ce qui est publié soit exactement ce qui est dans le dépôt.
           VERSION=$(grep -m1 '^version' app/Cargo.toml | cut -d'"' -f2)
           IFS=. read -r MA MI PA <<< "$VERSION"
           CODE=$((MA * 10000 + MI * 100 + PA))
-          sed -i -E "s/^( *version_code:).*/\1 $CODE/; s/^( *version_name:).*/\1 \"$VERSION\"/" android/manifest.yaml
+          GOT_CODE=$(grep -E '^ *version_code:' android/manifest.yaml | head -1 | tr -dc '0-9')
+          GOT_NAME=$(grep -E '^ *version_name:' android/manifest.yaml | head -1 | sed -E 's/.*"([^"]*)".*/\1/')
+          if [ "$GOT_CODE" != "$CODE" ] || [ "$GOT_NAME" != "$VERSION" ]; then
+            echo "::error::android/manifest.yaml indique $GOT_NAME / $GOT_CODE ; il devrait indiquer $VERSION / $CODE (version de app/Cargo.toml). Corriger le fichier, puis refaire le tag."
+            exit 1
+          fi
+          if [ -n "$TAG" ] && [ "$TAG" != "native-v$VERSION" ]; then
+            echo "::error::Le tag $TAG ne correspond pas à la version $VERSION de app/Cargo.toml (attendu : native-v$VERSION)."
+            exit 1
+          fi
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
           echo "Version $VERSION, versionCode $CODE"
       - name: Clé de signature
@@ -92,6 +116,17 @@ jobs:
           if [ "$SIGNED_WITH" = "durable" ]; then NAME="OrthoGrowth-${VERSION}-android.apk"; else NAME="OrthoGrowth-${VERSION}-android-test.apk"; fi
           cp "$APK" "out/$NAME"
           ls -la out
+      - name: Origine de l'APK (résumé de l'exécution)
+        run: |
+          {
+            echo "### Origine de l'APK"
+            echo "- Commit compilé : $(git rev-parse HEAD)"
+            echo "- Tag : ${TAG:-aucun}"
+            echo "- Rust : $(rustc --version)"
+            echo "- xbuild : commit e67b501cbe0e9ca5436c223aa7ec0fe5e27544d1"
+            echo "- Dossier de compilation : $GITHUB_WORKSPACE"
+            echo "- Signature : $SIGNED_WITH"
+          } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v7
         with:
           name: OrthoGrowth-android
