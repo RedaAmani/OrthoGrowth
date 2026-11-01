@@ -1,0 +1,80 @@
+name: Préparer une version
+
+# Met à jour le numéro de version partout (Cargo.toml x3, Cargo.lock, app.rc, manifeste Android, fichier livré)
+# et enregistre le changement sur la branche. À lancer AVANT de créer la Release :
+#   Actions > « Préparer une version » > Run workflow > saisir le nouveau numéro (ex. 0.5.3).
+# Le tag de la Release sera ensuite native-v0.5.3, créé sur ce commit.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Nouveau numéro de version, au format 1.2.3 (ex. 0.5.3)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    name: version
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - name: Mettre à jour les numéros de version
+        env:
+          NEW: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          [[ "$NEW" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::Format attendu : 1.2.3 (reçu : '$NEW')"; exit 1; }
+          cd native
+          OLD=$(grep -m1 '^version' app/Cargo.toml | cut -d'"' -f2)
+          [ "$OLD" != "$NEW" ] || { echo "::error::La version est déjà $NEW"; exit 1; }
+          for f in core/Cargo.toml app/Cargo.toml android/Cargo.toml; do
+            sed -i "0,/^version = \".*\"/s//version = \"$NEW\"/" "$f"
+          done
+          python3 - "$OLD" "$NEW" <<'PY'
+          import pathlib, re, sys
+          old, new = sys.argv[1], sys.argv[2]
+          nums = lambda v: [int(x) for x in v.split('.')]
+          (oa, ob, oc), (na, nb, nc) = nums(old), nums(new)
+          code = na * 10000 + nb * 100 + nc
+
+          def edit(path, fn):
+              p = pathlib.Path(path)
+              p.write_text(fn(p.read_text(encoding='utf-8')), encoding='utf-8')
+
+          def lock(s):
+              s, n = re.subn(r'(name = "(?:orthogrowth|orthogrowth-core|orthogrowth-android)"\nversion = ")[^"]+(")', lambda m: m.group(1) + new + m.group(2), s)
+              assert n == 3, f"Cargo.lock : {n} paquets mis à jour au lieu de 3"
+              return s
+
+          def rc(s):
+              a, b = f"{oa},{ob},{oc},0", f"{na},{nb},{nc},0"
+              assert s.count(a) == 2 and s.count(f'"{old}"') == 2, "app.rc : valeurs attendues introuvables"
+              return s.replace(a, b).replace(f'"{old}"', f'"{new}"')
+
+          def manifest(s):
+              s, n1 = re.subn(r'(?m)^( *version_code:).*$', lambda m: f"{m.group(1)} {code}", s)
+              s, n2 = re.subn(r'(?m)^( *version_name:).*$', lambda m: f'{m.group(1)} "{new}"', s)
+              assert n1 == 1 and n2 == 1, "manifest.yaml : lignes de version introuvables"
+              return s
+
+          edit('Cargo.lock', lock)
+          edit('app/app.rc', rc)
+          edit('android/manifest.yaml', manifest)
+          edit('dist-doc/LISEZ-MOI.txt', lambda s: s.replace(old, new))
+          print(f"{old} -> {new} (versionCode {code})")
+          PY
+          echo "Fichiers modifiés :"
+          git status --short
+      - name: Enregistrer sur la branche
+        env:
+          NEW: ${{ inputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A native
+          git commit -m "Version $NEW"
+          git push
+          echo "Version $NEW enregistrée. Créer maintenant la Release avec le tag native-v$NEW." >> "$GITHUB_STEP_SUMMARY"
