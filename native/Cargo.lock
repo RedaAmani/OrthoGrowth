@@ -3188,7 +3188,7 @@ dependencies = [
 
 [[package]]
 name = "orthogrowth"
-version = "0.5.2"
+version = "0.5.3"
 dependencies = [
  "embed-resource",
  "jni 0.21.1",
@@ -3200,7 +3200,7 @@ dependencies = [
 
 [[package]]
 name = "orthogrowth-android"
-version = "0.5.2"
+version = "0.5.3"
 dependencies = [
  "orthogrowth",
  "slint",
@@ -3208,7 +3208,7 @@ dependencies = [
 
 [[package]]
 name = "orthogrowth-core"
-version = "0.5.2"
+version = "0.5.3"
 dependencies = [
  "serde",
  "serde_json",

@@ -1,4 +1,4 @@
-OrthoGrowth 0.5.2 - application autonome hors ligne (Rust + Slint)
+OrthoGrowth 0.5.3 - application autonome hors ligne (Rust + Slint)
 
 MENU
   Fichier > Ouvrir le dossier des données, Quitter. Aide > À propos (version, crédits, licence, liens).

@@ -1,8 +1,8 @@
 1 ICON "assets/icon.ico"
 
 1 VERSIONINFO
-FILEVERSION 0,5,2,0
-PRODUCTVERSION 0,5,2,0
+FILEVERSION 0,5,3,0
+PRODUCTVERSION 0,5,3,0
 FILEOS 0x4
 FILETYPE 0x1
 BEGIN
@@ -12,12 +12,12 @@ BEGIN
     BEGIN
       VALUE "CompanyName", "Dr M.R. Amani"
       VALUE "FileDescription", "OrthoGrowth - local lower-limb length discrepancy estimator"
-      VALUE "FileVersion", "0.5.2"
+      VALUE "FileVersion", "0.5.3"
       VALUE "InternalName", "OrthoGrowth"
       VALUE "LegalCopyright", "GPL-3.0. Source: https://github.com/RedaAmani/OrthoGrowth. Multiplier table: Mills & Nelson 2016, CC BY 4.0"
       VALUE "OriginalFilename", "OrthoGrowth.exe"
       VALUE "ProductName", "OrthoGrowth"
-      VALUE "ProductVersion", "0.5.2"
+      VALUE "ProductVersion", "0.5.3"
     END
   END
   BLOCK "VarFileInfo"
