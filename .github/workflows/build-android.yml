@@ -34,7 +34,7 @@ jobs:
       TAG: ${{ github.event.inputs.tag || github.event.release.tag_name }}
       # Version exacte de Rust, figée pour des compilations reproductibles. À recopier depuis le journal d'une
       # compilation réussie (ligne « rustc 1.xx.y ») ; elle ne change qu'en connaissance de cause.
-      RUST_VERSION: "1.XX.Y"
+      RUST_VERSION: "1.99.1"
     defaults:
       run:
         working-directory: native
