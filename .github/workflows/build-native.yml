@@ -55,6 +55,16 @@ jobs:
         working-directory: native
     steps:
       - uses: actions/checkout@v6
+      - name: Vérifier que le tag correspond à la version
+        shell: bash
+        env:
+          TAG: ${{ github.event.inputs.tag || github.event.release.tag_name || (github.ref_type == 'tag' && github.ref_name || '') }}
+        run: |
+          VERSION=$(grep -m1 '^version' app/Cargo.toml | cut -d'"' -f2)
+          if [ -n "$TAG" ] && [ "$TAG" != "native-v$VERSION" ]; then
+            echo "::error::Le tag $TAG ne correspond pas à la version $VERSION de app/Cargo.toml."
+            exit 1
+          fi
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
         with:
