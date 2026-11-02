@@ -49,6 +49,8 @@ jobs:
             *) echo "Le tag doit commencer par native-v (reçu : '$TAG')"; exit 1 ;;
           esac
       - name: Version de Rust renseignée ?
+        # Avant l'extraction du dépôt, le dossier « native » n'existe pas encore : on travaille à la racine.
+        working-directory: .
         run: |
           case "$RUST_VERSION" in
             *X*) echo "::error::RUST_VERSION vaut encore $RUST_VERSION : recopier la version de Rust utilisée (voir le commentaire dans le fichier)."; exit 1 ;;
